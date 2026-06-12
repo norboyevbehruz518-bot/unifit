@@ -40,3 +40,8 @@ Format:
 
 - **Done:** Design tokens in globals.css (Tailwind v4 @theme): ink accent (indigo), warm stone neutrals, category colors reach=amber/target=green/safety=blue (never red), 7-step type scale, radii, single card shadow, light-only v1. Seven UI primitives in components/ui (Button, Input, Select, Card, ProgressBar, Badge, ScoreBar) — typed props, forwardRef, label association via useId, aria-describedby/invalid, shared ink focus ring; ScoreBar supports range display ("65–78") for honest uncertainty. Living style guide at /dev/design-system. Verified: screenshots of rendered page, focus-visible rule in compiled CSS, lint/typecheck/test/build all green.
 - **Next:** Fit engine implementation (tests first), then profile form + results UI using these primitives.
+
+## 2026-06-13 — Phase 2 complete: design system approved
+
+- **Done:** Founder reviewed the live style guide and approved tokens (ink accent, reach/target/safety palette, type scale) and all seven primitives. Final check suite green: 1/1 tests, lint clean, typecheck clean, production build clean (3 routes).
+- **Next:** Phase 3 — fit engine in /src/lib/fit-engine from FIT_ALGORITHM.md, tests first, 100% coverage. Then profile form + results UI.
