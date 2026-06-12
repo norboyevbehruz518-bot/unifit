@@ -4,6 +4,9 @@ This document is the intellectual foundation of the product. Every entity, score
 
 Guiding constraints (from AGENTS.md): one feature (the Fit Score), every number explainable in one sentence, never discourage, never fake precision.
 
+> **Amendments:**
+> - 2026-06-12 — §1.3 sub-scores restructured to `academicFit` / `practicalFit` / `profileFit` with hard gates and "Action needed" routing, matching [FIT_ALGORITHM.md](FIT_ALGORITHM.md) (see ADR-0002).
+
 ---
 
 ## 1. Core entities
@@ -107,14 +110,14 @@ The output of the fit engine for one (StudentProfile, University) pair. This is 
 
 | Field | Type | Notes |
 |---|---|---|
-| `academicFit` | 0–100 | How the student's academic record compares to enrolled internationals at this university. |
-| `financialFit` | 0–100 | Whether the family budget + realistic aid can cover the cost of attendance. |
-| `contextFit` | 0–100 | Driven by major availability ONLY in v1 — we don't ask the student for size/setting preferences, so scoring on them would be fake precision. Size/setting alignment is a v1.1 candidate (§5). |
-| `overall` | 0–100 | Weighted blend. Weights are a fit-engine decision recorded in its own ADR — but financial fit must be able to act as a gate, not just a weighted term (§4.3). |
-| `category` | `"safety" \| "target" \| "reach"` | Strategy framing, never a verdict. A reach is "pair it with targets," not "you can't." We deliberately have no category below reach: if a school is effectively impossible *for structural reasons* (hard financial filter), it is excluded with an explanation rather than scored low. |
-| `explanations` | one sentence per sub-score + one overall | Each must pass the 17-year-old test, e.g. "Your SAT 1380 is above the middle of admitted international students here (1300–1450)." Generated from the same inputs as the numbers — an explanation that doesn't match its number is a bug. |
-| `dataConfidence` | `"high" \| "medium" \| "low"` | Worst-of relevant field confidences (§3.2). Shown in the UI, always. |
-| `hardFilters` | list of `{ rule, explanation }` | Non-empty means this university is excluded from the ranked list and shown separately with the reason, e.g. "This university offers no financial aid to international students, and its cost is above your budget." |
+| `academicFit` | 0–100 | How the student's academic record compares to enrolled internationals at this university (test + GPA band comparison, with conservative international adjustments and English/test gates — FIT_ALGORITHM.md §1). |
+| `practicalFit` | 0–100 | "If admitted, can you actually go, and does it teach what you want?" Affordability (70%) + major availability (30%), with hard gates: Gate F (no intl aid AND cost > budget → cap 15), Gate M (no intended major offered → cap 20) — FIT_ALGORITHM.md §2. Size/setting and location alignment remain v1.1 candidates (§5). |
+| `profileFit` | 0–100 | The §2 rubric score mapped against the university's selectivity-tier expectation curve — the same profile reads differently at a 5% school vs a 70% school (FIT_ALGORITHM.md §3). |
+| `overall` | 0–100 | Weighted blend: 0.50 academic + 0.30 practical + 0.20 profile (FIT_ALGORITHM.md §4.1). Gates are caps applied *before* blending — a blended number must never paper over a gate. |
+| `category` | `"safety" \| "target" \| "reach"` | Strategy framing, never a verdict. A reach is "pair it with targets," not "you can't." Derived from `academicFit` + acceptance rate, with the sub-10% absolute-Reach override (FIT_ALGORITHM.md §4.2–4.3). We deliberately have no category below reach. |
+| `gatesFired` | list of `{ gate, explanation }` | Non-empty means this university skips category mapping and routes to the **"Action needed"** list (FIT_ALGORITHM.md §4.4) — shown separately, ordered by `overall`, each entry stating *what would unlock it* (take the SAT, retake IELTS, budget change). Gate F is student-overridable (external funding; their data, their call). This implements §4.3's hard filter. |
+| `explanations` | one sentence per sub-score + one overall | Each must pass the 17-year-old test, e.g. "Your SAT 1380 is above the middle of admitted international students here (1300–1450)." Generated from the same inputs as the numbers — an explanation that doesn't match its number is a bug. Templates in FIT_ALGORITHM.md §5. |
+| `dataConfidence` | `"high" \| "medium" \| "low"` | Worst-of relevant field confidences (§3.2; derivation table in FIT_ALGORITHM.md §6). Shown in the UI, always. |
 
 **Honest-uncertainty rule:** sub-scores are internal. The UI presents bands and ranges ("strong match", "55–70"), never "73.4%". The fit engine must expose range forms of its outputs so the UI never has to invent them.
 
@@ -173,7 +176,7 @@ Selective US admissions currently reward a legible spike over generic well-round
 
 ### Honesty notes on this rubric
 
-- It is **self-reported and coarse**. It feeds tie-breaking and the holistic side of academic comparison, and must never outweigh hard academic data in `academicFit`.
+- It is **self-reported and coarse**. It feeds `profileFit` and the test-optional academic path (FIT_ALGORITHM.md §1.3 Path B), and must never outweigh hard academic data in `academicFit`.
 - It deliberately ignores essays, recommendations, and interviews — we cannot measure them, so we say so in the UI rather than pretending the score covers everything.
 - Score bands for explanation: 0–35 "developing", 36–65 "solid", 66–100 "distinctive". Language chosen to describe a trajectory, not a rank.
 
@@ -262,8 +265,8 @@ Adjacent cases handled by the same mechanism: `merit-only` schools where typical
 
 ## 5. Open questions (to resolve via ADRs before the fit engine is built)
 
-1. Exact sub-score weights for `overall`, and whether weights shift when `dataConfidence` is low.
-2. Category thresholds: what score bands map to safety/target/reach, and how international acceptance rates shift the bands.
+1. ~~Exact sub-score weights for `overall`~~ — resolved: FIT_ALGORITHM.md §4.1 / ADR-0002. Still open: whether weights should shift when `dataConfidence` is low.
+2. ~~Category thresholds~~ — resolved: FIT_ALGORITHM.md §4.2–4.3 / ADR-0002.
 3. The major-category vocabulary (adopt CIP 2-digit codes vs. a simplified custom list).
 4. How profile strength interacts with academic fit at holistic vs. stats-driven schools (CDS C7 tells us which is which).
 5. **v1.1 candidate:** add size/setting alignment to `contextFit` — requires first adding size/setting preference questions to StudentProfile (we keep `setting`/`sizeCategory` in University data so this needs no re-curation).
