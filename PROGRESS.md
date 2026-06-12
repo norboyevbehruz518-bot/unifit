@@ -30,3 +30,8 @@ Format:
 
 - **Done:** Hosted Supabase project created (ref `zhvytavtdsgpligjmmsv`), CLI authed via access token, `db push` applied `20260612000000_initial_schema.sql`. Verified via REST API: all 5 tables exist, anon can read universities, anon INSERT rejected (RLS working). `.env.local` holds all secrets (incl. CLI token + db password); `.env.example` stays placeholders-only.
 - **Next:** Implement /src/lib/fit-engine from FIT_ALGORITHM.md, tests first.
+
+## 2026-06-12 — Skeleton verification (all green)
+
+- **Done:** Full verification pass: dev server HTTP 200 serving UniFit page; production build clean; 1/1 tests pass; lint clean; typecheck clean. Secrets audit: `.env.example` placeholders-only, `.env.local` gitignored (rule confirmed via `git check-ignore`), `git grep` finds no tokens/keys/passwords in any tracked file, working tree clean.
+- **Next:** Implement /src/lib/fit-engine from FIT_ALGORITHM.md, tests first. Phase 1 (foundation) is complete.
