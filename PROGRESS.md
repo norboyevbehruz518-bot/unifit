@@ -35,3 +35,8 @@ Format:
 
 - **Done:** Full verification pass: dev server HTTP 200 serving UniFit page; production build clean; 1/1 tests pass; lint clean; typecheck clean. Secrets audit: `.env.example` placeholders-only, `.env.local` gitignored (rule confirmed via `git check-ignore`), `git grep` finds no tokens/keys/passwords in any tracked file, working tree clean.
 - **Next:** Implement /src/lib/fit-engine from FIT_ALGORITHM.md, tests first. Phase 1 (foundation) is complete.
+
+## 2026-06-12 — Design system foundation
+
+- **Done:** Design tokens in globals.css (Tailwind v4 @theme): ink accent (indigo), warm stone neutrals, category colors reach=amber/target=green/safety=blue (never red), 7-step type scale, radii, single card shadow, light-only v1. Seven UI primitives in components/ui (Button, Input, Select, Card, ProgressBar, Badge, ScoreBar) — typed props, forwardRef, label association via useId, aria-describedby/invalid, shared ink focus ring; ScoreBar supports range display ("65–78") for honest uncertainty. Living style guide at /dev/design-system. Verified: screenshots of rendered page, focus-visible rule in compiled CSS, lint/typecheck/test/build all green.
+- **Next:** Fit engine implementation (tests first), then profile form + results UI using these primitives.
