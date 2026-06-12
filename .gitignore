@@ -19,6 +19,9 @@ next-env.d.ts
 # Vercel
 .vercel
 
+# Supabase CLI local state
+supabase/.temp
+
 # Testing
 /coverage
 /playwright-report/
