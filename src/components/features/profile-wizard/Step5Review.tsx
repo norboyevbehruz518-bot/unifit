@@ -3,39 +3,10 @@ import { Card } from "@/components/ui/Card";
 import { normalizeGpa } from "@/lib/fit-engine/normalize";
 import { COUNTRY_OPTIONS } from "@/lib/profile-wizard/countries";
 import type { ProfileDraft } from "@/lib/profile-wizard/draft";
+import { AID_LEVEL_LABELS, formatBudget, GPA_SCALE_LABELS } from "@/lib/profile-wizard/format";
 import { majorLabel } from "@/lib/profile-wizard/major-groups";
-import type { AidNeedLevel, GpaScale } from "@/types/domain";
 import { RUBRIC_QUESTIONS } from "./Step4ProfileStrength";
-
-const GPA_SCALE_LABELS: Record<GpaScale, string> = {
-  "4.0": "4.0 scale",
-  "5.0-uz": "5.0 (Uzbekistan)",
-  percentage: "Percentage",
-};
-
-const AID_LEVEL_LABELS: Record<AidNeedLevel, string> = {
-  none: "I can cover the full cost myself",
-  partial: "I'll need some financial aid",
-  full: "I need close to a full ride to attend",
-};
-
-function formatBudget(value: number): string {
-  return value === 0 ? "$0 (full scholarship)" : `$${value.toLocaleString("en-US")} / year`;
-}
-
-interface SummaryRowProps {
-  label: string;
-  value: string;
-}
-
-function SummaryRow({ label, value }: SummaryRowProps) {
-  return (
-    <div className="flex justify-between gap-4 text-small">
-      <span className="text-stone-500">{label}</span>
-      <span className="text-right font-medium text-stone-900">{value}</span>
-    </div>
-  );
-}
+import { SummaryRow } from "./SummaryRow";
 
 interface SummaryCardProps {
   title: string;
