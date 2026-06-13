@@ -25,6 +25,11 @@ function group(label: string, ids: string[]): MajorGroup {
   };
 }
 
+/** Display label for a major category id, e.g. "computer-science" -> "Computer Science". */
+export function majorLabel(id: string): string {
+  return categoryById.get(id)?.label ?? id;
+}
+
 /** Field groupings for the major picker — approved grouping of the 17-category vocabulary. */
 export const MAJOR_GROUPS: MajorGroup[] = [
   group("STEM", [

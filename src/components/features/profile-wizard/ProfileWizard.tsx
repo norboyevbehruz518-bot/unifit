@@ -1,16 +1,19 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { StepProgress } from "@/components/ui/StepProgress";
 import type { ProfileDraft } from "@/lib/profile-wizard/draft";
-import { loadWizardState, saveWizardState } from "@/lib/profile-wizard/storage";
+import { clearWizardState, loadWizardState, saveWizardState } from "@/lib/profile-wizard/storage";
+import { submitProfile } from "@/lib/profile-wizard/submit";
 import { validateStep, type StepErrors } from "@/lib/profile-wizard/validation";
 import { Step1Academics } from "./Step1Academics";
 import { Step2Direction } from "./Step2Direction";
 import { Step3Money } from "./Step3Money";
 import { Step4ProfileStrength } from "./Step4ProfileStrength";
+import { Step5Review } from "./Step5Review";
 
 const TOTAL_STEPS = 5;
 const STEP_LABELS = ["Academics", "Direction", "Money", "Profile strength", "Review"];
@@ -23,10 +26,13 @@ function useHydrated(): boolean {
 }
 
 export function ProfileWizard() {
+  const router = useRouter();
   const hydrated = useHydrated();
   const [step, setStep] = useState(() => loadWizardState().step);
   const [draft, setDraft] = useState<ProfileDraft>(() => loadWizardState().draft);
   const [errors, setErrors] = useState<StepErrors>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -52,6 +58,26 @@ export function ProfileWizard() {
     setStep((s) => Math.min(TOTAL_STEPS, s + 1));
   }
 
+  function handleEdit(targetStep: number) {
+    setErrors({});
+    setStep(targetStep);
+  }
+
+  async function handleSubmit() {
+    setSubmitting(true);
+    setSubmitError(null);
+    const result = await submitProfile(draft);
+    setSubmitting(false);
+
+    if (!result.ok) {
+      setSubmitError(result.error ?? "Something went wrong saving your profile.");
+      return;
+    }
+
+    clearWizardState();
+    router.push("/app/profile");
+  }
+
   if (!hydrated) {
     return null;
   }
@@ -65,16 +91,20 @@ export function ProfileWizard() {
         {step === 2 && <Step2Direction draft={draft} errors={errors} onChange={updateDraft} />}
         {step === 3 && <Step3Money draft={draft} errors={errors} onChange={updateDraft} />}
         {step === 4 && <Step4ProfileStrength draft={draft} errors={errors} onChange={updateDraft} />}
-        {step >= 5 && (
-          <p className="text-body text-stone-500">
-            Step {step} is on its way — for now, use Back to review what you&apos;ve entered.
-          </p>
+        {step === 5 && (
+          <Step5Review
+            draft={draft}
+            onEdit={handleEdit}
+            onSubmit={handleSubmit}
+            submitting={submitting}
+            submitError={submitError}
+          />
         )}
       </Card>
 
       <div className="flex items-center justify-between">
         {step > 1 ? (
-          <Button variant="secondary" onClick={handleBack}>
+          <Button variant="secondary" onClick={handleBack} disabled={submitting}>
             Back
           </Button>
         ) : (

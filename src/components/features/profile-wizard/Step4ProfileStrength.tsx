@@ -2,15 +2,17 @@ import { RadioCardGroup } from "@/components/ui/RadioCardGroup";
 import type { ProfileRubric } from "@/types/domain";
 import type { StepProps } from "./Step1Academics";
 
-interface RubricQuestion {
+export interface RubricQuestion {
   key: keyof ProfileRubric;
+  title: string;
   question: string;
   options: { label: string; description: string }[];
 }
 
-const RUBRIC_QUESTIONS: RubricQuestion[] = [
+export const RUBRIC_QUESTIONS: RubricQuestion[] = [
   {
     key: "leadership",
+    title: "Leadership",
     question:
       "What's the highest level of responsibility you've taken on in any activity — club, team, project, job, or volunteering?",
     options: [
@@ -34,6 +36,7 @@ const RUBRIC_QUESTIONS: RubricQuestion[] = [
   },
   {
     key: "awards",
+    title: "Awards & recognition",
     question:
       "What's the highest level you've placed or won at — a competition, olympiad, or award?",
     options: [
@@ -61,6 +64,7 @@ const RUBRIC_QUESTIONS: RubricQuestion[] = [
   },
   {
     key: "commitment",
+    title: "Sustained commitment",
     question:
       "How long have you stuck with your single longest-running activity outside of class?",
     options: [
@@ -75,6 +79,7 @@ const RUBRIC_QUESTIONS: RubricQuestion[] = [
   },
   {
     key: "focus",
+    title: "Focus",
     question: "How do your activities connect to what you want to study?",
     options: [
       {
