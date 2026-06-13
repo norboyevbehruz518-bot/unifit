@@ -8,6 +8,7 @@ import type { ProfileDraft } from "@/lib/profile-wizard/draft";
 import { loadWizardState, saveWizardState } from "@/lib/profile-wizard/storage";
 import { validateStep, type StepErrors } from "@/lib/profile-wizard/validation";
 import { Step1Academics } from "./Step1Academics";
+import { Step2Direction } from "./Step2Direction";
 
 const TOTAL_STEPS = 5;
 const STEP_LABELS = ["Academics", "Direction", "Money", "Profile strength", "Review"];
@@ -59,7 +60,8 @@ export function ProfileWizard() {
 
       <Card padding="lg">
         {step === 1 && <Step1Academics draft={draft} errors={errors} onChange={updateDraft} />}
-        {step >= 2 && (
+        {step === 2 && <Step2Direction draft={draft} errors={errors} onChange={updateDraft} />}
+        {step >= 3 && (
           <p className="text-body text-stone-500">
             Step {step} is on its way — for now, use Back to review what you&apos;ve entered.
           </p>
