@@ -45,3 +45,8 @@ Format:
 
 - **Done:** Founder reviewed the live style guide and approved tokens (ink accent, reach/target/safety palette, type scale) and all seven primitives. Final check suite green: 1/1 tests, lint clean, typecheck clean, production build clean (3 routes).
 - **Next:** Phase 3 — fit engine in /src/lib/fit-engine from FIT_ALGORITHM.md, tests first, 100% coverage. Then profile form + results UI.
+
+## 2026-06-13 — Fit engine implementation (all modules, no tests yet)
+
+- **Done:** Implemented every fit-engine module from FIT_ALGORITHM.md: `academic.ts` (§1, Path A/B, English/test-required gates, intl + need-aware penalties), `practical.ts` (§2, net cost, affordability, major match, Gate F/M, merit-lottery caveat), `profile.ts` (§3, rubric total + expectation curve), `overall.ts` (§4, blend, category mapping incl. sub-10% override, list balance), `explanations.ts` (§5, all templates), `confidence.ts` (§6), and `index.ts` (orchestrating `calculateFitResult`). Each committed separately; typecheck and lint both clean.
+- **Next:** Write unit tests for all fit-engine modules (100% coverage required per AGENTS.md) before moving on to profile form + results UI.
