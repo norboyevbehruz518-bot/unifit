@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/Input";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ScoreBar } from "@/components/ui/ScoreBar";
 import { Select } from "@/components/ui/Select";
+import { InteractiveDemo } from "./InteractiveDemo";
 
 export const metadata = { title: "Design System — UniFit" };
 
@@ -236,6 +237,16 @@ export default function DesignSystemPage() {
           instead of fake-precise points — the honest-uncertainty rule, built
           into the primitive.
         </p>
+      </Section>
+
+      <Section title="Profile wizard primitives">
+        <p className="max-w-prose text-small text-stone-500">
+          New primitives for the multi-step profile form: StepProgress,
+          SegmentedControl, Slider, RadioCardGroup, and SearchableMultiSelect.
+          All controlled — interactive demo below shares state via the JSON
+          panel at the bottom.
+        </p>
+        <InteractiveDemo />
       </Section>
     </main>
   );
