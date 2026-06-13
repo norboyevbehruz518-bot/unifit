@@ -1,0 +1,100 @@
+/**
+ * Citizenship picker options — ISO 3166-1 alpha-2 codes.
+ * Uzbekistan and neighboring Central Asian countries are pinned to the top
+ * since that's where most of our users are from; the rest are alphabetical
+ * by English name.
+ */
+
+export interface CountryOption {
+  value: string;
+  label: string;
+}
+
+const PINNED: CountryOption[] = [
+  { value: "UZ", label: "Uzbekistan" },
+  { value: "KZ", label: "Kazakhstan" },
+  { value: "KG", label: "Kyrgyzstan" },
+  { value: "TJ", label: "Tajikistan" },
+  { value: "TM", label: "Turkmenistan" },
+];
+
+const REST: CountryOption[] = [
+  { value: "AF", label: "Afghanistan" },
+  { value: "AL", label: "Albania" },
+  { value: "DZ", label: "Algeria" },
+  { value: "AR", label: "Argentina" },
+  { value: "AM", label: "Armenia" },
+  { value: "AU", label: "Australia" },
+  { value: "AT", label: "Austria" },
+  { value: "AZ", label: "Azerbaijan" },
+  { value: "BD", label: "Bangladesh" },
+  { value: "BY", label: "Belarus" },
+  { value: "BE", label: "Belgium" },
+  { value: "BR", label: "Brazil" },
+  { value: "BG", label: "Bulgaria" },
+  { value: "CA", label: "Canada" },
+  { value: "CN", label: "China" },
+  { value: "CO", label: "Colombia" },
+  { value: "HR", label: "Croatia" },
+  { value: "CZ", label: "Czech Republic" },
+  { value: "DK", label: "Denmark" },
+  { value: "EG", label: "Egypt" },
+  { value: "EE", label: "Estonia" },
+  { value: "FI", label: "Finland" },
+  { value: "FR", label: "France" },
+  { value: "GE", label: "Georgia" },
+  { value: "DE", label: "Germany" },
+  { value: "GH", label: "Ghana" },
+  { value: "GR", label: "Greece" },
+  { value: "HK", label: "Hong Kong" },
+  { value: "HU", label: "Hungary" },
+  { value: "IN", label: "India" },
+  { value: "ID", label: "Indonesia" },
+  { value: "IR", label: "Iran" },
+  { value: "IQ", label: "Iraq" },
+  { value: "IE", label: "Ireland" },
+  { value: "IL", label: "Israel" },
+  { value: "IT", label: "Italy" },
+  { value: "JP", label: "Japan" },
+  { value: "JO", label: "Jordan" },
+  { value: "KE", label: "Kenya" },
+  { value: "KR", label: "South Korea" },
+  { value: "KW", label: "Kuwait" },
+  { value: "LV", label: "Latvia" },
+  { value: "LB", label: "Lebanon" },
+  { value: "LT", label: "Lithuania" },
+  { value: "MY", label: "Malaysia" },
+  { value: "MX", label: "Mexico" },
+  { value: "MN", label: "Mongolia" },
+  { value: "MA", label: "Morocco" },
+  { value: "NP", label: "Nepal" },
+  { value: "NL", label: "Netherlands" },
+  { value: "NG", label: "Nigeria" },
+  { value: "NO", label: "Norway" },
+  { value: "PK", label: "Pakistan" },
+  { value: "PE", label: "Peru" },
+  { value: "PH", label: "Philippines" },
+  { value: "PL", label: "Poland" },
+  { value: "PT", label: "Portugal" },
+  { value: "QA", label: "Qatar" },
+  { value: "RO", label: "Romania" },
+  { value: "RU", label: "Russia" },
+  { value: "SA", label: "Saudi Arabia" },
+  { value: "RS", label: "Serbia" },
+  { value: "SG", label: "Singapore" },
+  { value: "SK", label: "Slovakia" },
+  { value: "ZA", label: "South Africa" },
+  { value: "ES", label: "Spain" },
+  { value: "SE", label: "Sweden" },
+  { value: "CH", label: "Switzerland" },
+  { value: "TW", label: "Taiwan" },
+  { value: "TH", label: "Thailand" },
+  { value: "TR", label: "Turkey" },
+  { value: "UA", label: "Ukraine" },
+  { value: "AE", label: "United Arab Emirates" },
+  { value: "GB", label: "United Kingdom" },
+  { value: "US", label: "United States" },
+  { value: "VN", label: "Vietnam" },
+];
+
+export const COUNTRY_OPTIONS: CountryOption[] = [...PINNED, ...REST];
