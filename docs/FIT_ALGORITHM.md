@@ -13,7 +13,7 @@ Every constant in this document is a **named, reviewable decision** — they liv
 
 ### 0.1 Band interpolation primitive
 
-Most scoring uses one primitive. Given a value `x` and a band `[p25, p75]` with width `w = p75 − p25` (guard: if `w < 1`, set `w = 1`):
+Most scoring uses one primitive. Given a value `x` and a band `[p25, p75]` with width `w = p75 − p25` (guard: if `w ≤ 0` — a degenerate band where `p75 <= p25` — set `w = 1`):
 
 | Region                        | Formula                            | Range |
 | ----------------------------- | ---------------------------------- | ----- |

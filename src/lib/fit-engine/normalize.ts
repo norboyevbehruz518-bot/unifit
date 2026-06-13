@@ -47,7 +47,10 @@ export function piecewiseLinear(
  * Never 0, never 100 (honest uncertainty).
  */
 export function bandScore(x: number, p25: number, p75: number): number {
-  const w = Math.max(BAND.minWidth, p75 - p25);
+  // Guard only against a truly degenerate band (p75 <= p25); a small but
+  // positive width (e.g. GPA bands ~0.2-0.7) is real and must not be
+  // widened to 1 (ADR-0003).
+  const w = p75 > p25 ? p75 - p25 : BAND.minWidth;
   if (x >= p25 && x <= p75) {
     return BAND.insideMin + (BAND.insideSpan * (x - p25)) / w;
   }
