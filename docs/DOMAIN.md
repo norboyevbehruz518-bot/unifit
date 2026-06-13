@@ -272,6 +272,6 @@ Adjacent cases handled by the same mechanism: `merit-only` schools where typical
 
 1. ~~Exact sub-score weights for `overall`~~ — resolved: FIT_ALGORITHM.md §4.1 / ADR-0002. Still open: whether weights should shift when `dataConfidence` is low.
 2. ~~Category thresholds~~ — resolved: FIT_ALGORITHM.md §4.2–4.3 / ADR-0002.
-3. The major-category vocabulary (adopt CIP 2-digit codes vs. a simplified custom list).
+3. ~~The major-category vocabulary~~ — resolved (Phase 4): a fixed 17-category simplified list (computer-science, engineering, business, economics, mathematics, biology, chemistry, physics, psychology, political-science, international-relations, communications, design-art, architecture, education, health-sciences, humanities-languages), defined in `data/major-categories.json`. Both `intendedMajors` and `majorCategoriesOffered` must draw from this list — enforced for seed data by `data/__tests__/seed.test.ts`.
 4. How profile strength interacts with academic fit at holistic vs. stats-driven schools (CDS C7 tells us which is which).
 5. **v1.1 candidate:** add size/setting alignment to `contextFit` — requires first adding size/setting preference questions to StudentProfile (we keep `setting`/`sizeCategory` in University data so this needs no re-curation).

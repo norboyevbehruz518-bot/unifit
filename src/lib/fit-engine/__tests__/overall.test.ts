@@ -10,7 +10,7 @@ import type { RateResolution } from "../types";
 import { mockAcademic, mockPractical, mockProfile } from "./fixtures";
 
 function rate(r: number, tier: 1 | 2 | 3 | 4 = 2): RateResolution {
-  return { r, tier, intlPublished: true };
+  return { r, tier, overallTier: tier, intlPublished: true };
 }
 
 describe("calculateOverall (§4.1)", () => {

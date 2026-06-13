@@ -11,8 +11,8 @@ import type { AcademicResult, PracticalResult, RateResolution } from "../types";
 import { calculateFitResult } from "../index";
 import { makeProfile, makeUniversity, mockAcademic, mockPractical, mockProfile } from "./fixtures";
 
-const PUBLISHED: RateResolution = { r: 15, tier: 2, intlPublished: true };
-const ADJUSTED: RateResolution = { r: 12, tier: 2, intlPublished: false };
+const PUBLISHED: RateResolution = { r: 15, tier: 2, overallTier: 2, intlPublished: true };
+const ADJUSTED: RateResolution = { r: 12, tier: 2, overallTier: 2, intlPublished: false };
 
 function academicWithTest(score: number): AcademicResult {
   return {
@@ -145,13 +145,13 @@ describe("explainOverall (§5)", () => {
   it("safety", () => expect(explainOverall("safety", PUBLISHED)).toContain("Strong fit and strong odds"));
   it("target", () => expect(explainOverall("target", PUBLISHED)).toContain("genuine match"));
   it("reach", () => {
-    const text = explainOverall("reach", { r: 8, tier: 1, intlPublished: true });
+    const text = explainOverall("reach", { r: 8, tier: 1, overallTier: 1, intlPublished: true });
     expect(text).toContain("Reach");
     expect(text).toContain("8%");
     expect(text).toContain("pair it with Targets");
   });
   it("null category (gated) uses the Reach framing too", () => {
-    const text = explainOverall(null, { r: 8, tier: 1, intlPublished: true });
+    const text = explainOverall(null, { r: 8, tier: 1, overallTier: 1, intlPublished: true });
     expect(text).toContain("Reach");
   });
 });

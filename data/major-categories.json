@@ -1,0 +1,19 @@
+[
+  { "id": "computer-science", "label": "Computer Science" },
+  { "id": "engineering", "label": "Engineering" },
+  { "id": "business", "label": "Business" },
+  { "id": "economics", "label": "Economics" },
+  { "id": "mathematics", "label": "Mathematics" },
+  { "id": "biology", "label": "Biology / Life Sciences" },
+  { "id": "chemistry", "label": "Chemistry" },
+  { "id": "physics", "label": "Physics" },
+  { "id": "psychology", "label": "Psychology" },
+  { "id": "political-science", "label": "Political Science" },
+  { "id": "international-relations", "label": "International Relations" },
+  { "id": "communications", "label": "Communications / Media" },
+  { "id": "design-art", "label": "Design / Art" },
+  { "id": "architecture", "label": "Architecture" },
+  { "id": "education", "label": "Education" },
+  { "id": "health-sciences", "label": "Health Sciences" },
+  { "id": "humanities-languages", "label": "Humanities / Languages" }
+]
