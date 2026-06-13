@@ -50,3 +50,8 @@ Format:
 
 - **Done:** Implemented every fit-engine module from FIT_ALGORITHM.md: `academic.ts` (§1, Path A/B, English/test-required gates, intl + need-aware penalties), `practical.ts` (§2, net cost, affordability, major match, Gate F/M, merit-lottery caveat), `profile.ts` (§3, rubric total + expectation curve), `overall.ts` (§4, blend, category mapping incl. sub-10% override, list balance), `explanations.ts` (§5, all templates), `confidence.ts` (§6), and `index.ts` (orchestrating `calculateFitResult`). Each committed separately; typecheck and lint both clean.
 - **Next:** Write unit tests for all fit-engine modules (100% coverage required per AGENTS.md) before moving on to profile form + results UI.
+
+## 2026-06-13 — Fit engine test suite + bandScore guard fix (ADR-0003)
+
+- **Done:** Wrote a comprehensive test suite against FIT_ALGORITHM.md (not the implementation): `fixtures.ts` plus `normalize.test.ts`, `academic.test.ts`, `practical.test.ts`, `profile.test.ts`, `overall.test.ts`, `confidence.test.ts`, `explanations.test.ts`, and a seeded property-based suite `property.test.ts` (300 generated cases). 528/530 passed on first run; 2 failures traced to a single spec/implementation bug: `bandScore`'s width guard (`w < 1 → w = 1`) silently widened every GPA-scale band (all <1 wide by design), understating academic fit by ~12 points. Fixed `bandScore` to only guard a truly degenerate band (`p75 <= p25`), updated FIT_ALGORITHM.md §0.1 to match, documented as ADR-0003 (constants-are-priors recalibration per ADR-0002 Decision 4). Removed the obsolete `smoke.test.ts`. Full suite now 530/530, typecheck and lint clean.
+- **Next:** Profile form + results UI using the fit engine and design system primitives.
