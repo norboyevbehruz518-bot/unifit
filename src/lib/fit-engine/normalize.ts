@@ -89,20 +89,27 @@ export function selectivityTier(acceptanceRate: number): SelectivityTier {
 /**
  * Resolves the best-available international acceptance rate `R` and its tier —
  * FIT_ALGORITHM.md §0.2 + §1.4(a). When no intl rate is published, the
- * adjustment factor is chosen by the tier of the OVERALL rate, and the
- * resulting adjusted R drives everything downstream (including its tier).
+ * adjustment factor is chosen by the tier of the OVERALL rate.
+ *
+ * Returns two tiers (ADR-0004):
+ * - `tier`: tier of `R` (published intl rate, or the §1.4-adjusted rate) —
+ *   for category mapping (§4.2-4.3) and the §1.4(b) academic-fit penalty only.
+ * - `overallTier`: tier of the UNADJUSTED `acceptanceRateOverall` — for the
+ *   GPA expectation bands (§1.2) and profile expectation curve (§3), which
+ *   describe who enrolls and must not be re-adjusted for the intl correction.
  */
 export function resolveAcceptance(university: University): RateResolution {
+  const overallTier = selectivityTier(university.acceptanceRateOverall);
   if (university.acceptanceRateIntl !== null) {
     return {
       r: university.acceptanceRateIntl,
       tier: selectivityTier(university.acceptanceRateIntl),
+      overallTier,
       intlPublished: true,
     };
   }
-  const overallTier = selectivityTier(university.acceptanceRateOverall);
   const r = university.acceptanceRateOverall * INTL_RATE_FACTOR[overallTier];
-  return { r, tier: selectivityTier(r), intlPublished: false };
+  return { r, tier: selectivityTier(r), overallTier, intlPublished: false };
 }
 
 /** Round to one decimal — keeps scores stable without faking precision. */

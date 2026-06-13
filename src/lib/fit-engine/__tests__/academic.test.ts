@@ -244,6 +244,64 @@ describe("Academic Fit — international adjustment (§1.4)", () => {
   });
 });
 
+describe("Academic Fit — overall tier vs. resolved tier (ADR-0004)", () => {
+  it("a NYU-style tier-crossing school scores GPA against its OWN (overall) tier, not the adjusted tier", () => {
+    // overall 12.8% -> overall tier 2 -> factor 0.6 -> adjusted r = 7.68 -> resolved tier 1
+    const university = makeUniversity({ acceptanceRateIntl: null, acceptanceRateOverall: 12.8 });
+    const rate = resolveAcceptance(university);
+    expect(rate.overallTier).toBe(2);
+    expect(rate.tier).toBe(1); // resolved tier crosses down a tier — for category/penalty only
+
+    // gpaNorm 3.7 sits INSIDE the tier-2 band [3.55, 3.85] (score 57.5) but
+    // ABOVE the tier-1 band [3.75, 3.95] (would score higher, ~78.75).
+    const profile = makeProfile({ gpaValue: 3.7, gpaScale: "4.0", satTotal: 1400 });
+    const result = calculateAcademicFit(profile, university, rate, calculateRubricTotal(profile.rubric));
+    expect(result.gpa.normalized).toBe(3.7);
+
+    // testScore uses the university's own published SAT band (unaffected by tier).
+    const testScore = 57.5; // bandScore(1400, 1300, 1500)
+    const gpaScoreTier2 = 57.5; // bandScore(3.7, 3.55, 3.85)
+    const academicRaw = 0.6 * testScore + 0.4 * gpaScoreTier2;
+    // resolved tier 1 -> intl penalty 10 (unpublished intl rate)
+    expect(result.intlPenalty).toBe(10);
+    expect(result.score).toBeCloseTo(academicRaw - 10, 5);
+  });
+
+  it("an ASU-style ~90%-acceptance, test-blind school scores a solidly-above-average GPA as Target, not Reach", () => {
+    // overall 90% -> tier 4 in both overall and resolved terms (factor 0.85 -> 76.5% -> still tier 4)
+    const university = makeUniversity({
+      acceptanceRateIntl: null,
+      acceptanceRateOverall: 90,
+      testPolicy: "blind",
+    });
+    const rate = resolveAcceptance(university);
+    expect(rate.overallTier).toBe(4);
+    expect(rate.tier).toBe(4);
+
+    // GPA 4.2/5.0-uz -> normalizeGpa = 3.46 (4.0 scale), zero rubric.
+    const profile = makeProfile({
+      gpaValue: 4.2,
+      gpaScale: "5.0-uz",
+      satTotal: undefined,
+      rubric: { leadership: 0, awards: 0, commitment: 0, focus: 0 },
+    });
+    const result = calculateAcademicFit(profile, university, rate, calculateRubricTotal(profile.rubric));
+
+    expect(result.path).toBe("B");
+    expect(result.gpa.normalized).toBeCloseTo(3.46, 5);
+    // tier-4 band [2.3, 3.0]: 3.46 is above p75 -> 75 + 20*(3.46-3.0)/0.7 = 88.14...
+    const gpaScoreTier4 = Math.min(95, 75 + (20 * (3.46 - 3.0)) / 0.7);
+    const rubricTotal = 5; // focus level 0 = 5, everything else 0
+    const academicRaw = 0.7 * gpaScoreTier4 + 0.3 * rubricTotal;
+    expect(result.score).toBeCloseTo(academicRaw - 2, 5); // tier-4 intl penalty = 2
+
+    // The headline fix: this used to land at ~49 (Reach, <55). It should now
+    // clear the Target threshold (55) for a school where 90% of applicants
+    // are admitted.
+    expect(result.score).toBeGreaterThanOrEqual(55);
+  });
+});
+
 describe("Academic Fit — final clamp (§1.4)", () => {
   it("never drops below 5", () => {
     const profile = makeProfile({ satTotal: 900, gpaValue: 2.0, gpaScale: "4.0" });

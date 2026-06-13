@@ -38,12 +38,20 @@ export const GPA_ANCHORS_PERCENTAGE: ReadonlyArray<readonly [number, number]> = 
 /** §0.2 — selectivity tier upper bounds (acceptance rate %, inclusive). */
 export const TIER_BOUNDS = { tier1Below: 10, tier2Below: 25, tier3Below: 50 } as const;
 
-/** §1.2 — tier-anchored GPA expectation bands (normalized 4.0 scale). */
+/**
+ * §1.2 — tier-anchored GPA expectation bands (normalized 4.0 scale), keyed by
+ * the OVERALL-rate tier (§0.2) — published percentiles already describe who
+ * enrolls, so this must not be re-adjusted for the §1.4 international
+ * correction (that would double-count selectivity). Tier 4 was lowered from
+ * {2.8, 3.5} to {2.3, 3.0} (ADR-0004): the old band put a ~3.5/4.0 GPA at the
+ * 75th percentile of an ~90%-acceptance, test-blind school, which read as a
+ * "Reach" for solidly-average applicants — backwards for an accessible school.
+ */
 export const GPA_TIER_BANDS: Record<SelectivityTier, { p25: number; p75: number }> = {
   1: { p25: 3.75, p75: 3.95 },
   2: { p25: 3.55, p75: 3.85 },
   3: { p25: 3.2, p75: 3.7 },
-  4: { p25: 2.8, p75: 3.5 },
+  4: { p25: 2.3, p75: 3.0 },
 };
 
 /** §1.3 — sub-component weights per path. */

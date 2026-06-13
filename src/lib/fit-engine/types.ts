@@ -41,8 +41,20 @@ export const ALGORITHM_VERSION = "1.0.0";
 export interface RateResolution {
   /** Best-available international acceptance rate (published or adjusted). */
   r: number;
-  /** Tier of `r` — used everywhere downstream (GPA anchors, profile curve). */
+  /**
+   * Tier of `r` — used ONLY for category mapping (§4.2-4.3) and the §1.4(b)
+   * international academic-fit penalty. Both are specifically about
+   * international admission odds, which is exactly what the §1.4 adjustment
+   * estimates.
+   */
   tier: SelectivityTier;
+  /**
+   * Tier of the UNADJUSTED `acceptanceRateOverall` — used for the GPA
+   * expectation bands (§1.2) and the profile expectation curve (§3).
+   * Published percentiles already describe who enrolls; re-adjusting them
+   * for the §1.4 international correction would double-count selectivity.
+   */
+  overallTier: SelectivityTier;
   /** True when the university publishes an international-specific rate. */
   intlPublished: boolean;
 }

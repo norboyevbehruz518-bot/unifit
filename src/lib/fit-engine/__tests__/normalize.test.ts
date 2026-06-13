@@ -137,7 +137,9 @@ describe("selectivityTier (§0.2)", () => {
 describe("resolveAcceptance (§0.2 + §1.4a)", () => {
   it("uses the published international rate directly when available", () => {
     const uni = makeUniversity({ acceptanceRateIntl: 8, acceptanceRateOverall: 30 });
-    expect(resolveAcceptance(uni)).toEqual({ r: 8, tier: 1, intlPublished: true });
+    // overallTier comes from the unadjusted overall rate (30% -> tier 3),
+    // independent of the published intl rate's own tier (8% -> tier 1).
+    expect(resolveAcceptance(uni)).toEqual({ r: 8, tier: 1, overallTier: 3, intlPublished: true });
   });
 
   it("adjusts the overall rate by the overall-tier factor (overall tier 1)", () => {

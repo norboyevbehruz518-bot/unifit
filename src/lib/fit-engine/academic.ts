@@ -68,7 +68,10 @@ export function calculateAcademicFit(
   rubricTotal: number,
 ): AcademicResult {
   const gpaNorm = normalizeGpa(profile.gpaValue, profile.gpaScale);
-  const gpaBand = GPA_TIER_BANDS[rate.tier];
+  // §1.2 — GPA bands are keyed by the OVERALL-rate tier (ADR-0004), not the
+  // §1.4-adjusted intl tier: published percentiles already describe who
+  // enrolls.
+  const gpaBand = GPA_TIER_BANDS[rate.overallTier];
   const gpaScore = bandScore(gpaNorm, gpaBand.p25, gpaBand.p75);
 
   const best = bestTestScore(profile, university);

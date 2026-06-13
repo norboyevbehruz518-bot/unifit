@@ -31,17 +31,19 @@ One-sentence explainability: every band score reduces to "you are inside / above
 
 ### 0.2 Selectivity tiers
 
-Tier is computed from the **best-available international acceptance rate** `R`:
-`R = acceptanceRateInternational` if published, else the adjusted rate from §1.4.
+Two tiers are computed, for different purposes (ADR-0004):
 
-| Tier | Acceptance rate `R` | Label (internal) |
+- **Overall tier** — from `acceptanceRateOverall` (unadjusted). Drives the GPA expectation bands (§1.2) and the profile expectation curve (§3). Published percentiles already describe who enrolls — re-adjusting them for the §1.4 international correction would double-count selectivity.
+- **Resolved tier** — from `R`, the **best-available international acceptance rate** (`R = acceptanceRateInternational` if published, else the §1.4-adjusted rate, which is itself keyed off the _overall_ tier). Drives category mapping (§4.2-4.3) and the §1.4(b) academic-fit penalty — both are specifically about international admission odds.
+
+| Tier | Acceptance rate | Label (internal) |
 | ---- | ------------------- | ---------------- |
 | 1    | < 10%               | Ultra-selective  |
 | 2    | 10–25%              | Highly selective |
 | 3    | 25–50%              | Selective        |
 | 4    | > 50%               | Accessible       |
 
-(Ordering note: the §1.4 adjustment factor needs a tier before `R` exists — that first tier lookup uses the _overall_ rate; the resulting adjusted `R` is then used everywhere else, including category mapping.)
+(Ordering note: the §1.4 adjustment factor is keyed by the _overall_ tier; the resulting adjusted `R` gets its own resolved tier, used only for category mapping and the §1.4(b) penalty — never for §1.2/§3 anchors.)
 
 ### 0.3 GPA normalization (exact tables)
 
@@ -86,18 +88,20 @@ Example: 4.6 → between (4.5, 3.7) and (5.0, 4.0) → 3.7 + (0.1/0.5)·0.3 = **
 
 ### 1.2 GPA component
 
-Universities rarely publish usable GPA distributions (CDS C11 is spotty), so v1 scores GPA against **tier-anchored expectation bands** (normalized 4.0 scale):
+Universities rarely publish usable GPA distributions (CDS C11 is spotty), so v1 scores GPA against **tier-anchored expectation bands** (normalized 4.0 scale), keyed by the **overall tier** (§0.2):
 
 | Tier | gpa25 | gpa75 |
 | ---- | ----- | ----- |
 | 1    | 3.75  | 3.95  |
 | 2    | 3.55  | 3.85  |
 | 3    | 3.20  | 3.70  |
-| 4    | 2.80  | 3.50  |
+| 4    | 2.30  | 3.00  |
 
-`gpaScore = bandScore(gpaNorm, gpa25_tier, gpa75_tier)`
+`gpaScore = bandScore(gpaNorm, gpa25_overallTier, gpa75_overallTier)`
 
 These anchors are constants in the engine, reviewable in one diff. If a university publishes C11, it can override its own anchors (per-school override field, optional in v1).
+
+**Tier 4 (ADR-0004):** lowered from {2.80, 3.50} to {2.30, 3.00}. The old band placed a ~3.5/4.0 GPA at the 75th percentile of an ~90%-acceptance, test-blind school — meaning a solidly-above-average applicant (e.g. a 3.46/4.0 equivalent) scored only "inside the band, near the middle," which propagated into `academicFit ≈ 49` and a **Reach** categorization at a school most counselors would call Safety. The lowered band puts that same applicant's `gpaScore` near the 95 cap, moving `academicFit` to ~60 (**Target**) — closer to reality for an accessible school. True **Safety** for a zero-extracurricular profile remains structurally out of reach under Path B's 0.7/0.3 weighting (§1.3) even at `gpaScore = 95`; that is a separate, intentional limit (see ADR-0004) and is not addressed by this band change.
 
 ### 1.3 Weighting: with-test vs. test-optional paths
 
@@ -128,7 +132,7 @@ GPA weight rises because it is the strongest remaining signal; the profile rubri
 
 If `acceptanceRateInternational` is null, two conservative corrections apply:
 
-**(a) Adjusted acceptance rate** (used for tiers and category mapping):
+**(a) Adjusted acceptance rate** (used for the resolved tier → category mapping, §4.2-4.3):
 
 | Tier (from overall rate) | Adjustment factor |
 | ------------------------ | ----------------- |
@@ -137,14 +141,14 @@ If `acceptanceRateInternational` is null, two conservative corrections apply:
 | 3                        | × 0.7             |
 | 4                        | × 0.85            |
 
-**(b) Academic-fit penalty:**
+**(b) Academic-fit penalty** (keyed by the tier of the adjusted rate `R`, i.e. the resolved tier — never the overall tier used for §1.2/§3 anchors):
 
-| Tier | Penalty on academicFit |
-| ---- | ---------------------- |
-| 1    | −10                    |
-| 2    | −8                     |
-| 3    | −5                     |
-| 4    | −2                     |
+| Tier (of `R`) | Penalty on academicFit |
+| ------------- | ---------------------- |
+| 1             | −10                    |
+| 2             | −8                     |
+| 3             | −5                     |
+| 4             | −2                     |
 
 **Reasoning:** published international acceptance rates, where they exist, run roughly 2–5× below overall rates at selective institutions (larger gaps at more selective schools — international pools are deeper and many schools read internationals need-aware). We deliberately err conservative: an over-optimistic score sends a student's application fee to a school that won't admit them; an over-conservative one costs nothing because categories are floors for strategy, not verdicts. Both corrections force `dataConfidence ≤ medium` and add the caveat sentence: _"This university doesn't publish international-specific stats, so we adjusted conservatively — international acceptance rates are typically lower than overall ones."_
 

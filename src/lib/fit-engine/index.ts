@@ -50,7 +50,9 @@ export function calculateFitResult(
   const rate = resolveAcceptance(university);
   const rubricTotal = calculateRubricTotal(profile.rubric);
 
-  const profileResult = calculateProfileFit(profile.rubric, rate.tier);
+  // §3 — profile expectation curve uses the OVERALL-rate tier (ADR-0004),
+  // same reasoning as the §1.2 GPA bands: it describes who enrolls.
+  const profileResult = calculateProfileFit(profile.rubric, rate.overallTier);
   const academic = calculateAcademicFit(profile, university, rate, rubricTotal);
   const practical = calculatePracticalFit(profile, university);
 
