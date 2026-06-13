@@ -10,5 +10,11 @@ export default defineConfig({
   test: {
     environment: "node", // fit-engine tests are pure; component tests opt into jsdom per-file
     include: ["src/**/*.test.{ts,tsx}"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html"],
+      include: ["src/lib/fit-engine/**/*.ts"],
+      exclude: ["src/lib/fit-engine/**/__tests__/**"],
+    },
   },
 });
