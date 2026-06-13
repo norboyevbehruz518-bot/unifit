@@ -31,8 +31,25 @@ export async function updateSession(request: NextRequest) {
   );
 
   // Required: getClaims() (or getUser()) must be called so the token is
-  // refreshed; do not remove even though the result is unused here.
-  await supabase.auth.getClaims();
+  // refreshed, and we use the result to gate /app/* routes below.
+  const { data } = await supabase.auth.getClaims();
+  const isAuthed = data?.claims != null;
+
+  const { pathname } = request.nextUrl;
+  const isProtected = pathname.startsWith("/app");
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
+
+  if (!isAuthed && isProtected) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  if (isAuthed && isAuthPage) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/app/profile";
+    return NextResponse.redirect(url);
+  }
 
   return supabaseResponse;
 }
