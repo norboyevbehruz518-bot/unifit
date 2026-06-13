@@ -15,6 +15,10 @@ import { clamp } from "./normalize";
  * requires re-asking students.
  */
 export function calculateRubricTotal(rubric: ProfileRubric): number {
+  // The `?? 0` fallbacks are unreachable for any caller respecting the
+  // RubricXLevel union types (each RUBRIC_POINTS array covers every valid
+  // level); they only guard against out-of-range data that bypassed
+  // TypeScript (e.g. corrupted records read back from the database).
   return (
     (RUBRIC_POINTS.leadership[rubric.leadership] ?? 0) +
     (RUBRIC_POINTS.awards[rubric.awards] ?? 0) +

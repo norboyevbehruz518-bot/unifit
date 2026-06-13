@@ -38,6 +38,9 @@ export function piecewiseLinear(
       return lo[1] + t * (hi[1] - lo[1]);
     }
   }
+  // Unreachable: the guards above ensure first[0] < x < last[0], so the
+  // loop's final iteration (hi === last) always satisfies x <= hi[0] and
+  // returns above. Kept as a type-safety fallback only.
   return last[1];
 }
 

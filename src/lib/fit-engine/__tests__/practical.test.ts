@@ -66,6 +66,24 @@ describe("Practical Fit — Gate M (major unavailable, §2.1)", () => {
     expect(result.gates.map((g) => g.gate)).toContain("major-unavailable");
     expect(result.score).toBe(20);
   });
+
+  it("Gate M with no intended majors at all -> generic placeholder in the explanation", () => {
+    const profile = makeProfile({
+      intendedMajors: [],
+      annualBudgetUsd: 70000,
+      aidNeedLevel: "none",
+    });
+    const university = makeUniversity({
+      majorCategoriesOffered: ["computer-science", "engineering"],
+      costOfAttendanceUsd: 70000,
+    });
+
+    const result = calculatePracticalFit(profile, university);
+
+    expect(result.majorMatch).toBe("none");
+    const gate = result.gates.find((g) => g.gate === "major-unavailable");
+    expect(gate?.explanation).toContain("your intended major");
+  });
 });
 
 describe("Practical Fit — net cost by aid policy (§2.2 step 1)", () => {
