@@ -1,0 +1,153 @@
+/**
+ * Academic Fit — FIT_ALGORITHM.md §1.
+ * Combines test-score and GPA band scores (Path A or B depending on
+ * available test data and policy), then applies the §1.3 hard-cap gates
+ * and the §1.4 international/need-aware corrections.
+ */
+
+import type { StudentProfile, University } from "@/types/domain";
+import type { AcademicResult, RateResolution } from "./types";
+import {
+  ACADEMIC_CLAMP,
+  ACADEMIC_GATES,
+  ACADEMIC_WEIGHTS,
+  ENGLISH_DEFAULTS,
+  GPA_TIER_BANDS,
+  INTL_ACADEMIC_PENALTY,
+  NEED_AWARE_PENALTY,
+  TEST_HELPS_THRESHOLD,
+} from "./weights";
+import { bandScore, clamp, normalizeGpa } from "./normalize";
+
+/**
+ * §1.1 — picks the better of SAT/ACT band scores (mirrors real
+ * submit-the-better-one strategy). Returns null if neither test has both
+ * a student score and university percentiles.
+ */
+function bestTestScore(
+  profile: StudentProfile,
+  university: University,
+): { name: "SAT" | "ACT"; value: number; p25: number; p75: number; score: number } | null {
+  const candidates: { name: "SAT" | "ACT"; value: number; p25: number; p75: number; score: number }[] = [];
+
+  if (profile.satTotal != null && university.sat25 != null && university.sat75 != null) {
+    candidates.push({
+      name: "SAT",
+      value: profile.satTotal,
+      p25: university.sat25,
+      p75: university.sat75,
+      score: bandScore(profile.satTotal, university.sat25, university.sat75),
+    });
+  }
+  if (profile.actComposite != null && university.act25 != null && university.act75 != null) {
+    candidates.push({
+      name: "ACT",
+      value: profile.actComposite,
+      p25: university.act25,
+      p75: university.act75,
+      score: bandScore(profile.actComposite, university.act25, university.act75),
+    });
+  }
+  if (candidates.length === 0) return null;
+  return candidates.reduce((best, c) => (c.score > best.score ? c : best));
+}
+
+/** §1.3 — English proficiency gate, applies to both paths. */
+function checkEnglishGate(profile: StudentProfile, university: University): boolean {
+  const ieltsMin = university.ieltsMin ?? ENGLISH_DEFAULTS.ielts;
+  const toeflMin = university.toeflMin ?? ENGLISH_DEFAULTS.toefl;
+  if (profile.englishTest === "none" || profile.englishScore == null) return true;
+  if (profile.englishTest === "ielts") return profile.englishScore < ieltsMin;
+  return profile.englishScore < toeflMin;
+}
+
+export function calculateAcademicFit(
+  profile: StudentProfile,
+  university: University,
+  rate: RateResolution,
+  rubricTotal: number,
+): AcademicResult {
+  const gpaNorm = normalizeGpa(profile.gpaValue, profile.gpaScale);
+  const gpaBand = GPA_TIER_BANDS[rate.tier];
+  const gpaScore = bandScore(gpaNorm, gpaBand.p25, gpaBand.p75);
+
+  const best = bestTestScore(profile, university);
+  const studentHasAnyTest = profile.satTotal != null || profile.actComposite != null;
+
+  let path: AcademicResult["path"] = "B";
+  let testUsed: AcademicResult["testUsed"] = null;
+  let testWithheld = false;
+
+  if (university.testPolicy === "blind") {
+    // Path B unconditionally; no test is ever scored at a test-blind school.
+  } else if (best !== null) {
+    if (university.testPolicy === "required") {
+      path = "A";
+      testUsed = { name: best.name, value: best.value, p25: best.p25, p75: best.p75 };
+    } else {
+      // optional: submit-only-if-it-helps (§1.1)
+      if (best.score >= TEST_HELPS_THRESHOLD) {
+        path = "A";
+        testUsed = { name: best.name, value: best.value, p25: best.p25, p75: best.p75 };
+      } else {
+        testWithheld = true;
+      }
+    }
+  }
+
+  // §0.2/§6 — student has a score the university can't compare against
+  // (no published percentiles for any test the student took), and that
+  // forced a fallback to Path B.
+  const percentilesMissingWithTest =
+    path === "B" && !testWithheld && studentHasAnyTest && university.testPolicy !== "blind";
+
+  let academicRaw: number;
+  if (path === "A" && testUsed !== null) {
+    academicRaw = ACADEMIC_WEIGHTS.pathA.test * best!.score + ACADEMIC_WEIGHTS.pathA.gpa * gpaScore;
+  } else {
+    academicRaw = ACADEMIC_WEIGHTS.pathB.gpa * gpaScore + ACADEMIC_WEIGHTS.pathB.rubric * rubricTotal;
+  }
+
+  const gates: AcademicResult["gates"] = [];
+  let capped = academicRaw;
+
+  // §1.3 — test-required gate: required test, none taken at all.
+  if (university.testPolicy === "required" && !studentHasAnyTest) {
+    capped = Math.min(capped, ACADEMIC_GATES.testRequiredCap);
+    gates.push({
+      gate: "test-required",
+      explanation: "This school requires the SAT or ACT — taking one unlocks this school.",
+    });
+  }
+
+  // §1.3 — English proficiency gate.
+  if (checkEnglishGate(profile, university)) {
+    capped = Math.min(capped, ACADEMIC_GATES.englishBelowMinCap);
+    const ieltsMin = university.ieltsMin ?? ENGLISH_DEFAULTS.ielts;
+    gates.push({
+      gate: "english-below-minimum",
+      explanation: `Their minimum is IELTS ${ieltsMin} — retaking the test unlocks this school.`,
+    });
+  }
+
+  // §1.4(b) — penalty when no intl-specific acceptance rate is published.
+  const intlPenalty = rate.intlPublished ? 0 : INTL_ACADEMIC_PENALTY[rate.tier];
+
+  // §1.4(c) — need-aware school + student needs aid.
+  const needAwarePenalty =
+    university.intlAidPolicy === "need-aware" && profile.aidNeedLevel !== "none" ? NEED_AWARE_PENALTY : 0;
+
+  const score = clamp(capped - intlPenalty - needAwarePenalty, ACADEMIC_CLAMP.min, ACADEMIC_CLAMP.max);
+
+  return {
+    score,
+    gates,
+    path,
+    testUsed,
+    testWithheld,
+    percentilesMissingWithTest,
+    gpa: { original: profile.gpaValue, scale: profile.gpaScale, normalized: gpaNorm },
+    intlPenalty,
+    needAwarePenalty,
+  };
+}
