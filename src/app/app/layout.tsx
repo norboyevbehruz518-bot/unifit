@@ -1,3 +1,4 @@
+import { AppNav } from "@/components/features/AppNav";
 import { SignOutButton } from "@/components/features/SignOutButton";
 
 export default function AppLayout({
@@ -9,6 +10,7 @@ export default function AppLayout({
     <div className="flex flex-1 flex-col">
       <header className="flex items-center justify-between border-b border-stone-200 px-6 py-4">
         <span className="text-h3 font-semibold text-stone-900">UniFit</span>
+        <AppNav />
         <SignOutButton />
       </header>
       <main className="flex flex-1 flex-col items-center px-4 py-12">
