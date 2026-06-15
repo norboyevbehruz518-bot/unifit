@@ -20,11 +20,36 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
+
+  async function sendMagicLink(targetEmail: string) {
+    setStatus("loading");
+    setError(null);
+    setErrorCode(null);
+
+    const supabase = createClient();
+    const { error: otpError } = await supabase.auth.signInWithOtp({
+      email: targetEmail,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/confirm?next=/app/profile`,
+      },
+    });
+
+    if (otpError) {
+      setStatus("error");
+      setError(getAuthErrorMessage(otpError));
+      setErrorCode(otpError.code ?? null);
+      return;
+    }
+
+    setStatus("magic-link-sent");
+  }
 
   async function handlePasswordSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("loading");
     setError(null);
+    setErrorCode(null);
 
     const supabase = createClient();
     const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -35,6 +60,7 @@ export default function LoginPage() {
     if (signInError) {
       setStatus("error");
       setError(getAuthErrorMessage(signInError));
+      setErrorCode(signInError.code ?? null);
       return;
     }
 
@@ -44,24 +70,7 @@ export default function LoginPage() {
 
   async function handleMagicLinkSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus("loading");
-    setError(null);
-
-    const supabase = createClient();
-    const { error: otpError } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/confirm?next=/app/profile`,
-      },
-    });
-
-    if (otpError) {
-      setStatus("error");
-      setError(getAuthErrorMessage(otpError));
-      return;
-    }
-
-    setStatus("magic-link-sent");
+    await sendMagicLink(email);
   }
 
   async function handleGoogleSignIn() {
@@ -144,6 +153,18 @@ export default function LoginPage() {
         {GOOGLE_OAUTH_ENABLED && (
           <Button type="button" variant="secondary" size="lg" onClick={handleGoogleSignIn}>
             Continue with Google
+          </Button>
+        )}
+
+        {mode === "password" && status === "error" && errorCode === "email_not_confirmed" && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            disabled={!email}
+            onClick={() => sendMagicLink(email)}
+          >
+            Send me a magic link instead
           </Button>
         )}
       </form>

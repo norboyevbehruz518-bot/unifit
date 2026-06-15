@@ -12,7 +12,7 @@ export function getAuthErrorMessage(error: AuthError | null | undefined): string
     case "invalid_credentials":
       return "That email and password don't match. Check for typos, or use a magic link instead.";
     case "email_not_confirmed":
-      return "Almost there — confirm your email first. Check your inbox for the link we sent.";
+      return "Almost there — confirm your email first. Check your inbox for the link we sent. Email confirmed but still having trouble? Try using a magic link to sign in.";
     case "user_already_exists":
     case "email_exists":
       return "An account with that email already exists. Try signing in instead.";
