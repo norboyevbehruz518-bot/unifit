@@ -1,5 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
+export interface CompetitorEntry {
+  rank: number;
+  name: string;
+  academicFit: number;
+}
+
 export interface RankData {
   rank: number;
   total: number;
@@ -48,4 +54,35 @@ export async function getRank(
     total,
     percentile: Math.round((1 - aheadCount / total) * 100),
   };
+}
+
+/**
+ * Fetches competitors ranked just above and below the student for display
+ * in a ranking ladder. Returns up to `range` entries above + `range` below.
+ */
+export async function getNearbyCompetitors(
+  universityId: string,
+  studentRank: number,
+  range = 3,
+): Promise<CompetitorEntry[]> {
+  const supabase = getClient();
+
+  // Offset so we fetch rows straddling the student's rank position
+  const aboveOffset = Math.max(0, studentRank - range - 1);
+  const limit = range * 2 + 1; // above + student slot + below
+
+  const { data, error } = await supabase
+    .from("competitor_pool")
+    .select("name, academic_fit")
+    .eq("university_id", universityId)
+    .order("academic_fit", { ascending: false })
+    .range(aboveOffset, aboveOffset + limit - 1);
+
+  if (error || !data) return [];
+
+  return data.map((row, i) => ({
+    rank: aboveOffset + i + 1,
+    name: row.name as string,
+    academicFit: row.academic_fit as number,
+  }));
 }
