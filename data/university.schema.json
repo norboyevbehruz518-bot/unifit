@@ -99,6 +99,29 @@
         "type": "string",
         "enum": ["verified-intl", "verified-overall", "estimated", "missing"]
       }
+    },
+
+    "c7_factors": {
+      "type": ["object", "null"],
+      "description": "CDS Section C7 admission factor weights. Present only for universities where we have reliable published data.",
+      "additionalProperties": false,
+      "properties": {
+        "rigor":            { "type": "string", "enum": ["very important", "important", "considered", "not considered"] },
+        "gpa":              { "type": "string", "enum": ["very important", "important", "considered", "not considered"] },
+        "test_scores":      { "type": "string", "enum": ["very important", "important", "considered", "not considered"] },
+        "essays":           { "type": "string", "enum": ["very important", "important", "considered", "not considered"] },
+        "recommendations":  { "type": "string", "enum": ["very important", "important", "considered", "not considered"] },
+        "extracurriculars": { "type": "string", "enum": ["very important", "important", "considered", "not considered"] },
+        "talent_ability":   { "type": "string", "enum": ["very important", "important", "considered", "not considered"] },
+        "character":        { "type": "string", "enum": ["very important", "important", "considered", "not considered"] },
+        "first_gen":        { "type": "string", "enum": ["very important", "important", "considered", "not considered"] },
+        "alumni_relation":  { "type": "string", "enum": ["very important", "important", "considered", "not considered"] },
+        "geographic":       { "type": "string", "enum": ["very important", "important", "considered", "not considered"] },
+        "volunteer":        { "type": "string", "enum": ["very important", "important", "considered", "not considered"] },
+        "work_experience":  { "type": "string", "enum": ["very important", "important", "considered", "not considered"] },
+        "special_note":     { "type": "string", "minLength": 1 }
+      },
+      "required": ["rigor","gpa","test_scores","essays","recommendations","extracurriculars","talent_ability","character","first_gen","alumni_relation","geographic","volunteer","work_experience","special_note"]
     }
   }
 }

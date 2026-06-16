@@ -14,7 +14,7 @@ import { calculatePracticalFit } from "./practical";
 import { calculateProfileFit, calculateRubricTotal } from "./profile";
 import { calculateOverall, categorize } from "./overall";
 import { deriveConfidence } from "./confidence";
-import { explainAcademic, explainOverall, explainPractical, explainProfile } from "./explanations";
+import { explainAcademic, explainOverall, explainPractical, explainProfile, explainSpecialNote } from "./explanations";
 
 export * from "./types";
 export * from "./normalize";
@@ -24,7 +24,7 @@ export { calculatePracticalFit } from "./practical";
 export { calculateProfileFit, calculateRubricTotal } from "./profile";
 export { calculateOverall, categorize, analyzeListBalance } from "./overall";
 export { deriveConfidence } from "./confidence";
-export { explainAcademic, explainOverall, explainPractical, explainProfile } from "./explanations";
+export { explainAcademic, explainOverall, explainPractical, explainProfile, explainSpecialNote, buildC7ProfileLines } from "./explanations";
 
 /**
  * §6 — data years older than STALE_AFTER_CYCLES admission cycles cap
@@ -88,8 +88,10 @@ export function calculateFitResult(
     explanations: {
       academic: explainAcademic(academic, rate),
       practical: explainPractical(profile, university, practical),
-      profile: explainProfile(profile.rubric, profileResult),
+      profile: explainProfile(profile.rubric, profileResult, university, profile),
       overall: explainOverall(category, rate),
+      // Only present when c7 data exists — omitting keeps Object.values() clean for tests
+      ...(explainSpecialNote(university) ? { specialNote: explainSpecialNote(university) } : {}),
     },
     dataConfidence: deriveConfidence(confidenceInputs),
   };

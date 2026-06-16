@@ -1,7 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import type { createClient as createServerClient } from "@/lib/supabase/server";
-import type { FieldConfidence, University } from "@/types/domain";
+import type { C7Factors, FieldConfidence, University } from "@/types/domain";
 
 type SupabaseClient = Awaited<ReturnType<typeof createServerClient>>;
 
@@ -33,6 +33,7 @@ export interface UniversityRow {
   cds_url: string;
   admission_source_year: string;
   field_confidence: Record<string, FieldConfidence>;
+  c7_factors: C7Factors | null;
 }
 
 /** Maps `field_confidence` keys from snake_case DB columns to `University` field names. */
@@ -94,6 +95,7 @@ export function mapUniversityRow(row: UniversityRow): University {
     cdsUrl: row.cds_url,
     admissionSourceYear: row.admission_source_year,
     fieldConfidence: mapFieldConfidence(row.field_confidence ?? {}),
+    c7Factors: row.c7_factors ?? undefined,
   };
 }
 
@@ -101,7 +103,8 @@ const UNIVERSITY_COLUMNS =
   "id, name, state, city, setting, undergrad_enrollment, type, major_categories, " +
   "acceptance_rate_overall, acceptance_rate_intl, sat25, sat50, sat75, act25, act50, act75, " +
   "test_policy, ielts_min, toefl_min, cost_of_attendance_usd, intl_aid_policy, " +
-  "avg_intl_aid_usd, pct_intl_receiving_aid, cds_url, admission_source_year, field_confidence";
+  "avg_intl_aid_usd, pct_intl_receiving_aid, cds_url, admission_source_year, field_confidence, " +
+  "c7_factors";
 
 /** Loads the full university catalog (public read, no auth required). */
 export async function getAllUniversities(supabase: SupabaseClient): Promise<University[]> {

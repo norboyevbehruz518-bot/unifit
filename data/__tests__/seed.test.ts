@@ -15,8 +15,8 @@ const VALID_CONFIDENCE_LEVELS = new Set(['verified-intl', 'verified-overall', 'e
 type SeedRecord = (typeof seed)[number];
 
 describe('universities.seed.json', () => {
-  it('contains exactly 60 records', () => {
-    expect(seed.length).toBe(60);
+  it('contains exactly 62 records', () => {
+    expect(seed.length).toBe(62);
   });
 
   it('has unique ids', () => {

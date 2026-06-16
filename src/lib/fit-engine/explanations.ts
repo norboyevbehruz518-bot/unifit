@@ -5,7 +5,7 @@
  * (EXPLANATION_BANDS).
  */
 
-import type { ProfileRubric, StudentProfile, University, FitCategory } from "@/types/domain";
+import type { C7Factors, ProfileRubric, StudentProfile, University, FitCategory } from "@/types/domain";
 import type { AcademicResult, PracticalResult, ProfileResult, RateResolution } from "./types";
 import { EXPLANATION_BANDS } from "./weights";
 import { round1 } from "./normalize";
@@ -87,7 +87,6 @@ const RUBRIC_AREA_LABELS: Record<keyof ProfileRubric, string> = {
   focus: "focused activities",
 };
 
-/** Each rubric area's max stored level (DOMAIN.md §2), used to compare areas on a common scale. */
 const RUBRIC_AREA_MAX: Record<keyof ProfileRubric, number> = {
   leadership: 3,
   awards: 4,
@@ -102,14 +101,109 @@ function strongestRubricArea(rubric: ProfileRubric): keyof ProfileRubric {
   );
 }
 
-/** §5 Profile Fit. */
-export function explainProfile(rubric: ProfileRubric, profile: ProfileResult): string {
-  if (profile.score > EXPLANATION_BANDS.midUpTo) {
+/** Normalised rubric score 0–1. */
+function rubricNorm(rubric: ProfileRubric): number {
+  const total = rubric.leadership / 3 + rubric.awards / 4 + rubric.commitment / 3 + rubric.focus / 3;
+  return total / 4;
+}
+
+/**
+ * Builds C7-aware profile explanation lines. Returns an array of separate
+ * actionable sentences so callers can render each as its own card.
+ * Always produces at least one item.
+ */
+export function buildC7ProfileLines(
+  rubric: ProfileRubric,
+  profile: StudentProfile,
+  c7: C7Factors,
+  universityName: string,
+  profileScore: number,
+): string[] {
+  const lines: string[] = [];
+  const norm = rubricNorm(rubric);
+  const rubricLow = norm < 0.4;
+  const rubricMid = norm >= 0.4 && norm < 0.7;
+  const noTest = !profile.satTotal && !profile.actComposite;
+
+  // Extracurriculars signal
+  if (c7.extracurriculars === "very important" && rubricLow) {
+    lines.push(
+      `${universityName} considers extracurriculars very important — building a clear spike (e.g. national competition, founded organisation, sustained research) before applying meaningfully strengthens your position.`,
+    );
+  } else if (c7.extracurriculars === "very important" && rubricMid) {
+    lines.push(
+      `${universityName} weighs extracurriculars heavily — deepening your existing commitment or adding a leadership role can push your profile from typical to memorable.`,
+    );
+  }
+
+  // Test score signal
+  if (c7.test_scores === "very important" && noTest) {
+    lines.push(
+      `${universityName} considers test scores very important — submitting strong scores (SAT 1500+ or ACT 34+) provides a measurable advantage that test-optional applicants give up.`,
+    );
+  }
+
+  // Essays signal — always worth calling out at very important tier
+  if (c7.essays === "very important") {
+    lines.push(
+      `Essays are very important at ${universityName} — admissions officers read them looking for intellectual curiosity and a specific reason you chose this school, not generic ambition.`,
+    );
+  }
+
+  // GPA signal when profile score is low
+  if (c7.gpa === "very important" && profileScore < EXPLANATION_BANDS.lowBelow) {
+    lines.push(
+      `${universityName} treats GPA as a primary academic signal — even incremental improvement matters at this selectivity level.`,
+    );
+  }
+
+  // Recommendations signal
+  if (c7.recommendations === "very important") {
+    lines.push(
+      `Strong recommendations carry significant weight at ${universityName} — choose recommenders who can speak to specific achievements, not just good character.`,
+    );
+  }
+
+  // If nothing specific fired, give a concise general line
+  if (lines.length === 0) {
+    lines.push(
+      `${universityName} evaluates applications holistically — your essays and recommendations are the levers you can still improve before applying.`,
+    );
+  }
+
+  return lines;
+}
+
+/**
+ * §5 Profile Fit — richer when c7Factors present on the university.
+ * `studentProfile` is optional for backward-compat; pass it whenever available
+ * so C7-aware paths can reference test score presence.
+ */
+export function explainProfile(
+  rubric: ProfileRubric,
+  profileResult: ProfileResult,
+  university?: University,
+  studentProfile?: StudentProfile,
+): string {
+  // C7-aware path: return the first/most important actionable line
+  if (university?.c7Factors) {
+    const lines = buildC7ProfileLines(
+      rubric,
+      studentProfile ?? ({ satTotal: undefined, actComposite: undefined } as StudentProfile),
+      university.c7Factors,
+      university.name,
+      profileResult.score,
+    );
+    return lines[0]!;
+  }
+
+  // Generic path (unchanged)
+  if (profileResult.score > EXPLANATION_BANDS.midUpTo) {
     const area = RUBRIC_AREA_LABELS[strongestRubricArea(rubric)];
-    const selectivityWord = profile.tier <= 2 ? "selective" : "accessible";
+    const selectivityWord = profileResult.tier <= 2 ? "selective" : "accessible";
     return `Your ${area} stands out at a school this ${selectivityWord} — activities like yours are a real differentiator here.`;
   }
-  if (profile.score >= EXPLANATION_BANDS.lowBelow) {
+  if (profileResult.score >= EXPLANATION_BANDS.lowBelow) {
     return "Your profile is typical of students admitted here — solid, with room to stand out more through your essays.";
   }
   return "Students here usually show stronger leadership, awards, or longer-term commitment — you have time to build toward that, and your essays can carry more weight meanwhile.";
@@ -126,4 +220,12 @@ export function explainOverall(category: FitCategory | null, rate: RateResolutio
     case null:
       return `This is a Reach — your profile belongs in the pool, and at a ${round1(rate.r)}% acceptance rate that's true for most applicants. Apply, and pair it with Targets.`;
   }
+}
+
+/**
+ * Generates the university-specific special note from C7 data.
+ * Returns undefined for universities without c7Factors.
+ */
+export function explainSpecialNote(university: University): string | undefined {
+  return university.c7Factors?.special_note;
 }

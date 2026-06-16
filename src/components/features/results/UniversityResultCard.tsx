@@ -39,6 +39,12 @@ export function UniversityResultCard({ university, result }: UniversityResultCar
 
       <RankDisplay universityId={university.id} academicFit={result.academicFit} />
 
+      {result.explanations.specialNote && (
+        <div className="mt-4 rounded-md border border-ink-100 bg-ink-50 px-3 py-2.5 text-small text-ink-800">
+          {result.explanations.specialNote}
+        </div>
+      )}
+
       <div className="mt-4 flex items-center justify-between gap-3">
         <DataConfidenceBadge confidence={result.dataConfidence} />
         <Link

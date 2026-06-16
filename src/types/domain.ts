@@ -110,6 +110,30 @@ export interface StudentProfile {
 // `null` always means "not published" — never invent values.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// CDS Section C7 — admission factor weights
+// ---------------------------------------------------------------------------
+
+export type C7ImportanceLevel = "very important" | "important" | "considered" | "not considered";
+
+export interface C7Factors {
+  rigor: C7ImportanceLevel;
+  gpa: C7ImportanceLevel;
+  test_scores: C7ImportanceLevel;
+  essays: C7ImportanceLevel;
+  recommendations: C7ImportanceLevel;
+  extracurriculars: C7ImportanceLevel;
+  talent_ability: C7ImportanceLevel;
+  character: C7ImportanceLevel;
+  first_gen: C7ImportanceLevel;
+  alumni_relation: C7ImportanceLevel;
+  geographic: C7ImportanceLevel;
+  volunteer: C7ImportanceLevel;
+  work_experience: C7ImportanceLevel;
+  /** One sentence about what makes this university unique in admissions. */
+  special_note: string;
+}
+
 export interface University {
   /** Stable slug, e.g. "purdue-west-lafayette". */
   id: string;
@@ -144,6 +168,9 @@ export interface University {
   cdsUrl: string;
   admissionSourceYear: string;
   fieldConfidence: Partial<Record<keyof University, FieldConfidence>>;
+
+  // CDS Section C7 — present for ~15 top universities
+  c7Factors?: C7Factors;
 }
 
 // ---------------------------------------------------------------------------
@@ -184,6 +211,8 @@ export interface FitResult {
     practical: string;
     profile: string;
     overall: string;
+    /** University-specific insight from CDS C7 data. Present only when c7Factors exist. */
+    specialNote?: string;
   };
 
   dataConfidence: DataConfidence;

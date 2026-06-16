@@ -20,6 +20,11 @@ export function ActionNeededCard({ university, result }: ActionNeededCardProps) 
             {gate.explanation}
           </li>
         ))}
+        {result.explanations.specialNote && (
+          <li className="rounded-md border border-ink-100 bg-ink-50 px-3 py-2 text-ink-800">
+            {result.explanations.specialNote}
+          </li>
+        )}
       </ul>
     </Card>
   );
