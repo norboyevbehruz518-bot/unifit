@@ -60,16 +60,25 @@ export async function getRank(
  * Fetches competitors ranked just above and below the student for display
  * in a ranking ladder. Returns up to `range` entries above + `range` below.
  */
+/**
+ * Fetches competitors ranked just above and below the student for display
+ * in a ranking ladder. Returns up to `range` entries above + `range` below,
+ * each tagged with their virtual rank number.
+ *
+ * The student row is NOT included — callers stitch it in at index `actualAbove`
+ * (also returned) so it lands correctly even when studentRank < range.
+ */
 export async function getNearbyCompetitors(
   universityId: string,
   studentRank: number,
   range = 3,
-): Promise<CompetitorEntry[]> {
+): Promise<{ competitors: CompetitorEntry[]; actualAbove: number }> {
   const supabase = getClient();
 
-  // Offset so we fetch rows straddling the student's rank position
-  const aboveOffset = Math.max(0, studentRank - range - 1);
-  const limit = range * 2 + 1; // above + student slot + below
+  // How many rows actually exist above the student (clamped at top of board)
+  const actualAbove = Math.min(range, studentRank - 1);
+  const aboveOffset = studentRank - actualAbove - 1; // 0-indexed DB offset
+  const limit = actualAbove + range; // rows above + rows below
 
   const { data, error } = await supabase
     .from("competitor_pool")
@@ -78,11 +87,15 @@ export async function getNearbyCompetitors(
     .order("academic_fit", { ascending: false })
     .range(aboveOffset, aboveOffset + limit - 1);
 
-  if (error || !data) return [];
+  if (error || !data) return { competitors: [], actualAbove };
 
-  return data.map((row, i) => ({
-    rank: aboveOffset + i + 1,
+  const competitors = data.map((row, i) => ({
+    // Rows before actualAbove are above the student; rows from actualAbove onward
+    // are below, so shift their rank by +1 to account for the student's slot.
+    rank: i < actualAbove ? aboveOffset + i + 1 : aboveOffset + i + 2,
     name: row.name as string,
     academicFit: row.academic_fit as number,
   }));
+
+  return { competitors, actualAbove };
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { ScoreBar } from "@/components/ui/ScoreBar";
@@ -40,17 +41,12 @@ export function UniversityResultCard({ university, result }: UniversityResultCar
 
       <div className="mt-4 flex items-center justify-between gap-3">
         <DataConfidenceBadge confidence={result.dataConfidence} />
-        <details className="group">
-          <summary className="cursor-pointer text-small font-medium text-ink-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-600">
-            Why this score?
-          </summary>
-          <div className="mt-3 flex flex-col gap-2 text-small text-stone-700">
-            <p>{result.explanations.overall}</p>
-            <p>{result.explanations.academic}</p>
-            <p>{result.explanations.practical}</p>
-            <p>{result.explanations.profile}</p>
-          </div>
-        </details>
+        <Link
+          href={`/app/ranking/${university.id}`}
+          className="text-small font-medium text-ink-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-600"
+        >
+          See your ranking →
+        </Link>
       </div>
     </Card>
   );
