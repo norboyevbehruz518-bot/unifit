@@ -19,13 +19,15 @@ export async function recalculateResults(): Promise<void> {
   }
   const userId = userData.user.id;
 
-  const profileWithMeta = await getProfile(supabase, userId);
+  const [profileWithMeta, listId] = await Promise.all([
+    getProfile(supabase, userId),
+    getOrCreateDefaultList(supabase, userId),
+  ]);
   if (!profileWithMeta) {
     redirect("/app/setup");
   }
   const { profile, updatedAt } = profileWithMeta;
 
-  const listId = await getOrCreateDefaultList(supabase, userId);
   const universityIds = await getListItems(supabase, listId);
   const universities = await getUniversitiesByIds(supabase, universityIds);
 

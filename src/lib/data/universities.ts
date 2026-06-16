@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import type { createClient as createServerClient } from "@/lib/supabase/server";
 import type { FieldConfidence, University } from "@/types/domain";
 
@@ -111,6 +113,23 @@ export async function getAllUniversities(supabase: SupabaseClient): Promise<Univ
   if (error) throw error;
   return (data as unknown as UniversityRow[]).map(mapUniversityRow);
 }
+
+/**
+ * Cached version of getAllUniversities for server-side use.
+ * Uses a public (anon-key) client — universities are public read, no auth needed.
+ * Revalidates every hour; data changes only when we re-seed.
+ */
+export const getCachedUniversities: () => Promise<University[]> = unstable_cache(
+  async () => {
+    const supabase = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
+    return getAllUniversities(supabase as unknown as SupabaseClient);
+  },
+  ["universities-catalog"],
+  { revalidate: 3600 },
+);
 
 /** Loads a single university by id, or null if not found. */
 export async function getUniversitiesByIds(

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { UniversitySelectionForm } from "@/components/features/university-picker/UniversitySelectionForm";
-import { getAllUniversities } from "@/lib/data/universities";
+import { getCachedUniversities } from "@/lib/data/universities";
 import { getProfile } from "@/lib/data/profile";
 import { getListItems, getOrCreateDefaultList } from "@/lib/data/lists";
 import { createClient } from "@/lib/supabase/server";
@@ -15,15 +15,16 @@ export default async function UniversitiesPage() {
     redirect("/login");
   }
 
-  const profile = await getProfile(supabase, userData.user.id);
+  const [profile, universities, listId] = await Promise.all([
+    getProfile(supabase, userData.user.id),
+    getCachedUniversities(),
+    getOrCreateDefaultList(supabase, userData.user.id),
+  ]);
+
   if (!profile) {
     redirect("/app/setup");
   }
 
-  const [universities, listId] = await Promise.all([
-    getAllUniversities(supabase),
-    getOrCreateDefaultList(supabase, userData.user.id),
-  ]);
   const selectedIds = await getListItems(supabase, listId);
 
   return (

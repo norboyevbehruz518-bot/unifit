@@ -35,11 +35,13 @@ export async function getOrComputeResults(
   supabase: SupabaseClient,
   userId: string,
 ): Promise<ResultsView | null> {
-  const profileWithMeta = await getProfile(supabase, userId);
+  const [profileWithMeta, listId] = await Promise.all([
+    getProfile(supabase, userId),
+    getOrCreateDefaultList(supabase, userId),
+  ]);
   if (!profileWithMeta) return null;
   const { profile, updatedAt } = profileWithMeta;
 
-  const listId = await getOrCreateDefaultList(supabase, userId);
   const universityIds = await getListItems(supabase, listId);
   if (universityIds.length === 0) {
     return { profile, results: [], needsRecalculate: false };
