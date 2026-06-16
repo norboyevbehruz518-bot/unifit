@@ -11,6 +11,42 @@ Format:
 
 ---
 
+## CURRENT STATE — 2026-06-16
+
+**Production URL:** https://unifit-ten.vercel.app (live, real users)
+**GitHub:** https://github.com/norboyevbehruz518-bot/unifit
+**Supabase project:** `zhvytavtdsgpligjmmsv`
+**Test suite:** 937/937 passing
+**Algorithm version:** `1.0.0`
+
+### What's working in production
+- Email/password signup + login (email confirmation OFF — Supabase built-in mailer, no rate-limit friction for MVP)
+- Magic link sign-in (OTP via `/auth/confirm`)
+- Google OAuth (enabled via `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=true`)
+- Profile wizard: 5 steps — Academics (GPA/SAT/ACT/IELTS/AP scores), Direction (majors), Money (budget/aid), Profile strength (rubric), Review + save
+- Fit engine: academic (Path A/B, gates, intl penalties, AP bonus §1.5), practical (affordability, major match, Gate F/M), profile (rubric curve), overall blend + category mapping + list balance
+- 60 universities seeded in production (Tier 1–4, all US, Common Data Set sourced)
+- University picker: searchable, tier-filterable, capped at 12, ultra-selective tip
+- Results page: list-balance hero, Safety/Target/Reach sections, score bars, explanations, data-confidence badges, action-needed section for gated schools, recalculate button
+- Competitor ranking: `RankDisplay` client component — shows #rank of 500 with position bar when percentile ≥ 50, hidden below percentile 10
+- CI: GitHub Actions on every push (typecheck → lint → test → build)
+- Error boundary (`/app/app/error.tsx`), loading skeletons for `/app/universities` and `/app/results`
+- Universities catalog cached via `unstable_cache` (1h revalidation, shared across all users)
+
+### Known issues / pending
+- **Resend SMTP not delivering:** `onboarding@resend.dev` requires domain verification on Resend. Workaround: Supabase built-in mailer with email confirmation OFF. Fix: verify a domain in Resend and update SMTP sender. Blocker: domain not yet purchased.
+- **AP scores not reflected in competitor pool:** the 30,000-row pool was seeded with AP bonuses included in `academic_fit` (profiles include AP scores), but if we re-tune the AP weights we'd need to re-run `scripts/generate-pool.ts` to refresh pool data.
+- **Confirmation email template:** already uses `token_hash` pattern (not the old `ConfirmationURL`), so it's safe to re-enable email confirmation once SMTP is fixed.
+
+### Data / infrastructure
+- `profiles` table: includes `ap_scores jsonb` column (migrated 2026-06-16)
+- `competitor_pool` table: 30,000 rows, 500 virtual profiles per university, seeded via `scripts/generate-pool.ts`
+- Migrations applied: `20260612000000_initial_schema.sql`, `20260616000000_add_ap_scores.sql`, `20260616120000_add_competitor_pool.sql`
+- Seed script: `scripts/seed.ts` (60 universities, idempotent upsert)
+- Pool generator: `scripts/generate-pool.ts` (500 Uzbek virtual profiles × 60 universities, `--dry-run` flag)
+
+---
+
 ## 2026-06-12 — Project discipline setup
 
 - **Done:** Created AGENTS.md (principles, stack, engineering rules), PROGRESS.md, ADR template in docs/decisions/, .env.example.
@@ -95,3 +131,18 @@ Format:
 
 - **Done:** Security audit (RLS integration tests, client bundle scan, npm audit, git history check — all clean). GitHub Actions CI (`ci.yml` — typecheck/lint/test/build on every push), public repo at `github.com/norboyevbehruz518-bot/unifit`, CI badge in README. Root page (`/`) now redirects to `/login` or `/app/profile` based on auth state. Email confirmation UX fix: `email_not_confirmed` error gets a one-click "Send me a magic link instead" button. Google OAuth enabled (`NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=true`). Error boundaries (`src/app/app/error.tsx`) and loading skeletons (`loading.tsx` for `/app/universities` and `/app/results`). Performance: `getCachedUniversities()` wraps the 60-row catalog in `unstable_cache` (1h revalidation); universities page and results orchestration both parallelize independent fetches. AP exam scores (§1.5): migration applied (`ap_scores jsonb` on `profiles`), `ApScore` domain type, 5 weight constants in `weights.ts`, `calculateApBonus()` in `academic.ts`, AP exam picker UI in Step 1 (searchable subject dropdown, score 1–5 buttons, max 8 exams), 9 new engine tests — 937/937 total. Competitor pool: `competitor_pool` table migrated and seeded with 30,000 rows (500 virtual Uzbek profiles × 60 universities via `scripts/generate-pool.ts`). Client-side ranking on results page: `getRank.ts` (two parallel HEAD COUNT queries, no rows transferred), `RankDisplay.tsx` client component fetches on mount with skeleton, shows rank + position bar only when percentile ≥ 50, hidden below percentile 10.
 - **Next:** Sprint 4 — notification system OR other features as decided by founder.
+
+## SPRINT ROADMAP — 2026-06-16
+
+### Sprint 4 (next)
+- **Notification system:** weekly rank change emails — "Your rank at MIT moved from #312 to #287 this week." Requires: cron job (Vercel cron or Supabase pg_cron), storing last-seen rank per user per university, Resend API (not SMTP) for transactional email.
+- **Prerequisite:** fix Resend SMTP → migrate to Resend API (not SMTP relay) for reliable delivery without domain verification friction.
+
+### Future sprints (founder to prioritize)
+- **AP scores in ranking pool:** re-run `scripts/generate-pool.ts` after any AP weight changes; consider adding TOEFL profiles to pool (currently all IELTS).
+- **TOEFL support:** add TOEFL to Step 1 alongside IELTS (engine already handles `toefl`, just needs UI).
+- **Landing page:** replace the direct `/login` root with a proper marketing page at `/` describing UniFit for Uzbek students; move auth to `/login`.
+- **Custom domain:** purchase domain, configure in Vercel, update Supabase redirect URLs and Resend sender domain simultaneously.
+- **v1.1 fit engine:** path B ceiling fix for test-blind schools (BACKLOG.md); per-major acceptance rates for CS-heavy schools (UIUC, CMU, Purdue).
+- **More universities:** expand beyond 60 (UK/Canada/EU international options; more US Tier 3/4 accessible schools popular with Uzbek students).
+- **Profile completeness nudge:** surface a banner on `/app/results` when profile is incomplete (no AP scores, no English test) showing how score would change if those fields were filled.
