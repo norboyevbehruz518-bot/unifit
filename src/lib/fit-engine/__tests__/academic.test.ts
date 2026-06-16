@@ -321,3 +321,121 @@ describe("Academic Fit — final clamp (§1.4)", () => {
     expect(result.score).toBeLessThanOrEqual(95);
   });
 });
+
+describe("Academic Fit — AP bonus (§1.5)", () => {
+  // Baseline: SAT 1400, Tier 2, intl published → no intl penalty.
+  // academicRaw = 0.6 * 57.5 + 0.4 * 57.5 = 57.5 exactly.
+  function baseScore() {
+    const profile = makeProfile({ satTotal: 1400 });
+    const university = makeUniversity();
+    const rate = resolveAcceptance(university);
+    return calculateAcademicFit(profile, university, rate, calculateRubricTotal(profile.rubric));
+  }
+
+  it("no AP scores → bonus is 0, score unchanged", () => {
+    const result = baseScore();
+    expect(result.apBonus).toBe(0);
+  });
+
+  it("undefined apScores → bonus is 0", () => {
+    const profile = makeProfile({ satTotal: 1400, apScores: undefined });
+    const university = makeUniversity();
+    const rate = resolveAcceptance(university);
+    const result = calculateAcademicFit(profile, university, rate, calculateRubricTotal(profile.rubric));
+    expect(result.apBonus).toBe(0);
+  });
+
+  it("3 strong APs (score 5) → bonus = +4.5", () => {
+    const profile = makeProfile({
+      satTotal: 1400,
+      apScores: [
+        { subject: "Calculus BC", score: 5 },
+        { subject: "Chemistry", score: 5 },
+        { subject: "Computer Science A", score: 5 },
+      ],
+    });
+    const university = makeUniversity();
+    const rate = resolveAcceptance(university);
+    const result = calculateAcademicFit(profile, university, rate, calculateRubricTotal(profile.rubric));
+    expect(result.apBonus).toBe(4.5);
+    expect(result.score).toBeCloseTo(57.5 + 4.5);
+  });
+
+  it("8 strong APs → bonus capped at +8 (not +12)", () => {
+    const profile = makeProfile({
+      satTotal: 1400,
+      apScores: Array.from({ length: 8 }, (_, i) => ({ subject: `AP ${i}`, score: 5 })),
+    });
+    const university = makeUniversity();
+    const rate = resolveAcceptance(university);
+    const result = calculateAcademicFit(profile, university, rate, calculateRubricTotal(profile.rubric));
+    expect(result.apBonus).toBe(8);
+  });
+
+  it("1 passing AP (score 3) → bonus = +0.5", () => {
+    const profile = makeProfile({
+      satTotal: 1400,
+      apScores: [{ subject: "Statistics", score: 3 }],
+    });
+    const university = makeUniversity();
+    const rate = resolveAcceptance(university);
+    const result = calculateAcademicFit(profile, university, rate, calculateRubricTotal(profile.rubric));
+    expect(result.apBonus).toBe(0.5);
+  });
+
+  it("7 passing APs (score 3) → bonus capped at +3 (not +3.5)", () => {
+    const profile = makeProfile({
+      satTotal: 1400,
+      apScores: Array.from({ length: 7 }, (_, i) => ({ subject: `AP ${i}`, score: 3 })),
+    });
+    const university = makeUniversity();
+    const rate = resolveAcceptance(university);
+    const result = calculateAcademicFit(profile, university, rate, calculateRubricTotal(profile.rubric));
+    expect(result.apBonus).toBe(3);
+  });
+
+  it("mixed: 2 strong (score 4) + 3 passing (score 3) → +3.0 + +1.5 = +4.5", () => {
+    const profile = makeProfile({
+      satTotal: 1400,
+      apScores: [
+        { subject: "Biology", score: 4 },
+        { subject: "Chemistry", score: 4 },
+        { subject: "Statistics", score: 3 },
+        { subject: "Psychology", score: 3 },
+        { subject: "US History", score: 3 },
+      ],
+    });
+    const university = makeUniversity();
+    const rate = resolveAcceptance(university);
+    const result = calculateAcademicFit(profile, university, rate, calculateRubricTotal(profile.rubric));
+    expect(result.apBonus).toBeCloseTo(4.5);
+  });
+
+  it("scores 1 and 2 → no effect, bonus = 0", () => {
+    const profile = makeProfile({
+      satTotal: 1400,
+      apScores: [
+        { subject: "Calculus AB", score: 2 },
+        { subject: "Physics 1", score: 1 },
+      ],
+    });
+    const university = makeUniversity();
+    const rate = resolveAcceptance(university);
+    const result = calculateAcademicFit(profile, university, rate, calculateRubricTotal(profile.rubric));
+    expect(result.apBonus).toBe(0);
+  });
+
+  it("AP bonus cannot push final score above 95 (clamp)", () => {
+    // SAT 1600 at Tier 2 → academicRaw near 95; adding APs must not break the cap.
+    const profile = makeProfile({
+      satTotal: 1600,
+      gpaValue: 4.0,
+      gpaScale: "4.0",
+      apScores: Array.from({ length: 8 }, (_, i) => ({ subject: `AP ${i}`, score: 5 })),
+    });
+    const university = makeUniversity();
+    const rate = resolveAcceptance(university);
+    const result = calculateAcademicFit(profile, university, rate, calculateRubricTotal(profile.rubric));
+    expect(result.score).toBeLessThanOrEqual(95);
+  });
+});

@@ -68,6 +68,7 @@ export function mockAcademic(score: number, gates: GateFired[] = []): AcademicRe
     gpa: { original: 3.7, scale: "4.0", normalized: 3.7 },
     intlPenalty: 0,
     needAwarePenalty: 0,
+    apBonus: 0,
   };
 }
 

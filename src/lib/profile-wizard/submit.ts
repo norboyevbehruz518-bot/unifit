@@ -19,6 +19,7 @@ function toProfileRow(userId: string, draft: ProfileDraft) {
     rubric_commitment: draft.rubric.commitment,
     rubric_focus: draft.rubric.focus,
     citizenship: draft.citizenship,
+    ap_scores: draft.apScores.length > 0 ? draft.apScores : null,
   };
 }
 

@@ -5,12 +5,17 @@
  * and the §1.4 international/need-aware corrections.
  */
 
-import type { StudentProfile, University } from "@/types/domain";
+import type { ApScore, StudentProfile, University } from "@/types/domain";
 import type { AcademicResult, RateResolution } from "./types";
 import {
   ACADEMIC_CLAMP,
   ACADEMIC_GATES,
   ACADEMIC_WEIGHTS,
+  AP_PASSING_BONUS,
+  AP_PASSING_CAP,
+  AP_STRONG_BONUS,
+  AP_STRONG_CAP,
+  AP_STRONG_SCORE,
   ENGLISH_DEFAULTS,
   GPA_TIER_BANDS,
   INTL_ACADEMIC_PENALTY,
@@ -18,6 +23,24 @@ import {
   TEST_HELPS_THRESHOLD,
 } from "./weights";
 import { bandScore, clamp, normalizeGpa } from "./normalize";
+
+/**
+ * §1.5 — optional AP bonus. Applied after the base blend, before §1.4
+ * international penalties. Scores 1–2 have no effect (hard course ≠ weak
+ * student; penalising them would violate "never discourage").
+ */
+function calculateApBonus(apScores: ApScore[] | undefined): number {
+  if (!apScores || apScores.length === 0) return 0;
+  const strongBonus = Math.min(
+    apScores.filter((a) => a.score >= AP_STRONG_SCORE).length * AP_STRONG_BONUS,
+    AP_STRONG_CAP,
+  );
+  const passingBonus = Math.min(
+    apScores.filter((a) => a.score === 3).length * AP_PASSING_BONUS,
+    AP_PASSING_CAP,
+  );
+  return strongBonus + passingBonus;
+}
 
 /**
  * §1.1 — picks the better of SAT/ACT band scores (mirrors real
@@ -133,6 +156,9 @@ export function calculateAcademicFit(
     });
   }
 
+  // §1.5 — AP bonus (optional signal; applied before §1.4 penalties).
+  const apBonus = calculateApBonus(profile.apScores);
+
   // §1.4(b) — penalty when no intl-specific acceptance rate is published.
   const intlPenalty = rate.intlPublished ? 0 : INTL_ACADEMIC_PENALTY[rate.tier];
 
@@ -140,7 +166,11 @@ export function calculateAcademicFit(
   const needAwarePenalty =
     university.intlAidPolicy === "need-aware" && profile.aidNeedLevel !== "none" ? NEED_AWARE_PENALTY : 0;
 
-  const score = clamp(capped - intlPenalty - needAwarePenalty, ACADEMIC_CLAMP.min, ACADEMIC_CLAMP.max);
+  const score = clamp(
+    capped + apBonus - intlPenalty - needAwarePenalty,
+    ACADEMIC_CLAMP.min,
+    ACADEMIC_CLAMP.max,
+  );
 
   return {
     score,
@@ -152,5 +182,6 @@ export function calculateAcademicFit(
     gpa: { original: profile.gpaValue, scale: profile.gpaScale, normalized: gpaNorm },
     intlPenalty,
     needAwarePenalty,
+    apBonus,
   };
 }

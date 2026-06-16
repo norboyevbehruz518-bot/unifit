@@ -154,7 +154,31 @@ If `acceptanceRateInternational` is null, two conservative corrections apply:
 
 **(c) Need-aware penalty:** if `intlAidPolicy = "need-aware"` AND `aidNeedLevel ≠ "none"`: additional −5 on academicFit, explanation: _"This school considers financial need for international applicants, which makes admission slightly harder when you need aid."_ (Affordability itself is Practical Fit's job; this term reflects admission odds only.)
 
-Final: `academicFit = clamp(academicRaw − penalties, 5, 95)`.
+Final: `academicFit = clamp(capped + apBonus − penalties, 5, 95)`.
+
+### 1.5 AP exam bonus (optional signal)
+
+AP scores are optional. When present, they are applied **after** the Path A/B base blend and gate caps, and **before** the §1.4 international and need-aware penalties. The ordering matters: gates cap `academicRaw`; AP bonus enhances that capped value; penalties then reduce from there; the final clamp [5, 95] applies last.
+
+**Rationale:** AP exams are the clearest academic signal available for international applicants from systems without SAT/ACT norms. A score of 4 or 5 is a direct, standardised statement of college-level mastery. Scores of 1–2 carry no penalty (taking a hard course and not acing it is not a negative signal — "never discourage").
+
+| Tier          | Condition                        | Bonus per exam | Cap     |
+| ------------- | -------------------------------- | -------------- | ------- |
+| Strong        | Score ≥ 4                        | +1.5           | +8 max  |
+| Passing       | Score = 3 (exactly)              | +0.5           | +3 max  |
+| No effect     | Score ≤ 2                        | 0              | —       |
+
+The two caps are independent: a student with 6 strong APs and 4 passing APs earns min(6×1.5, 8) + min(4×0.5, 3) = 8 + 2 = **+10** (if they have no score-3 exams the passing cap is moot). The final clamp at 95 still applies.
+
+**Constants (all in `weights.ts`, recalibrable in one diff):**
+
+```
+AP_STRONG_SCORE  = 4
+AP_STRONG_BONUS  = 1.5
+AP_STRONG_CAP    = 8
+AP_PASSING_BONUS = 0.5
+AP_PASSING_CAP   = 3
+```
 
 ---
 

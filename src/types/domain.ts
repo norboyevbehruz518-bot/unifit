@@ -65,6 +65,17 @@ export interface ProfileRubric {
 }
 
 // ---------------------------------------------------------------------------
+// AP exam scores (FIT_ALGORITHM.md §1.5)
+// ---------------------------------------------------------------------------
+
+/** One AP exam result. Subject is a free slug from the 20-item canonical list. */
+export interface ApScore {
+  subject: string;
+  /** College Board score: 1–5. */
+  score: number;
+}
+
+// ---------------------------------------------------------------------------
 // StudentProfile (DOMAIN.md §1.1)
 // ---------------------------------------------------------------------------
 
@@ -87,6 +98,8 @@ export interface StudentProfile {
   rubric: ProfileRubric;
   /** ISO 3166-1 alpha-2. */
   citizenship: string;
+  /** AP exam results — optional, max 8 (FIT_ALGORITHM.md §1.5). */
+  apScores?: ApScore[];
 }
 
 // ---------------------------------------------------------------------------

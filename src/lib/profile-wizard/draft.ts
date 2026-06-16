@@ -1,4 +1,4 @@
-import type { AidNeedLevel, EnglishTest, GpaScale, ProfileRubric } from "@/types/domain";
+import type { AidNeedLevel, ApScore, EnglishTest, GpaScale, ProfileRubric } from "@/types/domain";
 
 /**
  * Working state for the profile wizard. Numeric fields are kept as strings
@@ -18,6 +18,7 @@ export interface ProfileDraft {
   fullScholarship: boolean;
   aidNeedLevel: AidNeedLevel;
   rubric: ProfileRubric;
+  apScores: ApScore[];
 }
 
 export const EMPTY_DRAFT: ProfileDraft = {
@@ -33,4 +34,5 @@ export const EMPTY_DRAFT: ProfileDraft = {
   fullScholarship: false,
   aidNeedLevel: "partial",
   rubric: { leadership: 0, awards: 0, commitment: 0, focus: 0 },
+  apScores: [],
 };

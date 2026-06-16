@@ -92,6 +92,16 @@ export const NEED_AWARE_PENALTY = 5;
 /** Final academic clamp (§1.4): never certain in either direction. */
 export const ACADEMIC_CLAMP = { min: 5, max: 95 } as const;
 
+/**
+ * §1.5 — AP exam bonus constants. Applied after the Path A/B base blend,
+ * before §1.4 international penalties. All values recalibrable in one diff.
+ */
+export const AP_STRONG_SCORE = 4;   // score ≥ this counts as "strong"
+export const AP_STRONG_BONUS = 1.5; // per strong AP exam
+export const AP_STRONG_CAP = 8;     // max total bonus from strong APs
+export const AP_PASSING_BONUS = 0.5; // per score-3 AP exam
+export const AP_PASSING_CAP = 3;    // max total bonus from passing APs
+
 /** §2.1 — practical-fit gate caps. 15/20, not 0: "blocked as planned", not "worthless". */
 export const PRACTICAL_GATES = { financialCap: 15, majorCap: 20 } as const;
 

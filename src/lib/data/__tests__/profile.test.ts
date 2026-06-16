@@ -18,6 +18,7 @@ function makeRow(overrides: Partial<ProfileRow> = {}): ProfileRow {
     rubric_commitment: 3,
     rubric_focus: 2,
     citizenship: "UZ",
+    ap_scores: null,
     updated_at: "2026-06-01T00:00:00.000Z",
     ...overrides,
   };

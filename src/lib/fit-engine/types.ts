@@ -76,6 +76,8 @@ export interface AcademicResult {
   intlPenalty: number;
   /** §1.4(c) −5 when need-aware and student needs aid. */
   needAwarePenalty: number;
+  /** §1.5 — total AP bonus applied (0 when no AP scores supplied). */
+  apBonus: number;
 }
 
 export type MajorMatch = "all" | "first-choice" | "partial" | "none";
