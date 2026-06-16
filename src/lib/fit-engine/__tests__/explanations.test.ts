@@ -41,11 +41,11 @@ describe("explainAcademic (§5)", () => {
     expect(text).toContain("below this school's typical range");
   });
 
-  it("Path B: no-test template references the student's GPA", () => {
+  it("Path B: no-test template references the student's GPA with scale", () => {
     const academic: AcademicResult = { ...mockAcademic(50), path: "B", testUsed: null };
     const text = explainAcademic(academic, PUBLISHED);
     expect(text).toContain("Without test scores");
-    expect(text).toContain("3.7");
+    expect(text).toContain("3.7/4.0");
   });
 
   it("appends the intl-adjusted caveat when the rate is not published", () => {
@@ -79,18 +79,21 @@ describe("explainPractical (§5)", () => {
     expect(text).toContain("70000");
   });
 
-  it("mid band: doable with merit aid, includes coverage percent and net cost", () => {
+  it("mid band: doable with merit aid, includes budget, coverage percent and net cost", () => {
     const practical: PracticalResult = { ...mockPractical(55), affordabilityScore: 55, netCost: 100000 };
     const text = explainPractical(profile, university, practical);
-    expect(text).toContain("Your budget covers about");
+    expect(text).toContain("budget covers about");
     expect(text).toContain("%");
     expect(text).toContain("100000");
+    expect(text).toContain("70000");
   });
 
-  it("low band: cost well above budget", () => {
+  it("low band: shows gap and budget", () => {
     const practical: PracticalResult = { ...mockPractical(20), affordabilityScore: 20, netCost: 150000 };
     const text = explainPractical(profile, university, practical);
-    expect(text).toContain("is well above your");
+    expect(text).toContain("above your $");
+    expect(text).toContain("150000");
+    expect(text).toContain("70000");
   });
 
   it("returns the Gate F explanation directly when fired", () => {
@@ -125,19 +128,22 @@ describe("explainPractical (§5)", () => {
 describe("explainProfile (§5)", () => {
   const rubric = { leadership: 1 as const, awards: 1 as const, commitment: 1 as const, focus: 1 as const };
 
-  it("high band: stands out", () => {
+  it("high band: stand out, includes rubric total", () => {
     const text = explainProfile(rubric, mockProfile(80));
-    expect(text).toContain("stands out");
+    expect(text).toContain("stand out");
+    expect(text).toContain("34/100");
   });
 
-  it("mid band: typical of students admitted here", () => {
+  it("mid band: typical of students admitted here, includes rubric total", () => {
     const text = explainProfile(rubric, mockProfile(55));
     expect(text).toContain("typical of students admitted here");
+    expect(text).toContain("34/100");
   });
 
-  it("low band: students here usually show", () => {
+  it("low band: shows rubric total and growth prompt", () => {
     const text = explainProfile(rubric, mockProfile(30));
-    expect(text).toContain("Students here usually show");
+    expect(text).toContain("Students here typically look for");
+    expect(text).toContain("34/100");
   });
 });
 

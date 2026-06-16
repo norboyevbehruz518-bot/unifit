@@ -35,7 +35,7 @@ export type {
 } from "@/types/domain";
 
 /** Bump on any scoring change; stored in every fit_snapshot. */
-export const ALGORITHM_VERSION = "1.1.0";
+export const ALGORITHM_VERSION = "1.2.0";
 
 /** How the university's acceptance rate was resolved (FIT_ALGORITHM.md §0.2, §1.4a). */
 export interface RateResolution {

@@ -19,7 +19,7 @@ export function explainAcademic(academic: AcademicResult, rate: RateResolution):
 
   let base: string;
   if (academic.path === "B" || academic.testUsed === null) {
-    base = `Without test scores, universities put more weight on your essays, recommendations, and activities — which we can't measure. This estimate leans on your GPA of ${academic.gpa.original} and is less precise.`;
+    base = `Without test scores, this estimate leans on your GPA of ${academic.gpa.original}/${academic.gpa.scale} — universities in this range also weigh essays and activities heavily, which this model can't fully capture.`;
   } else {
     const { name, value, p25, p75 } = academic.testUsed;
     if (academic.score > EXPLANATION_BANDS.midUpTo) {
@@ -65,9 +65,10 @@ export function explainPractical(profile: StudentProfile, university: University
   } else if (practical.affordabilityScore >= EXPLANATION_BANDS.lowBelow) {
     const coveragePct = Math.round((profile.annualBudgetUsd / practical.netCost) * 100);
     const avgAid = university.avgIntlAidUsd != null ? `$${university.avgIntlAidUsd}` : "merit aid";
-    base = `Your budget covers about ${coveragePct}% of the realistic cost (~$${Math.round(practical.netCost)}/yr) — doable with ${avgAid !== "merit aid" ? `merit aid averaging ${avgAid}` : avgAid}, but have a funding plan.`;
+    base = `Your $${profile.annualBudgetUsd}/yr budget covers about ${coveragePct}% of the $${Math.round(practical.netCost)}/yr realistic cost — doable with ${avgAid !== "merit aid" ? `merit aid averaging ${avgAid}` : avgAid}, but have a funding plan.`;
   } else {
-    base = `The realistic cost here (~$${Math.round(practical.netCost)}/yr) is well above your $${profile.annualBudgetUsd} budget, and aid for international students is limited — your application money likely works harder elsewhere.`;
+    const gap = Math.round(practical.netCost) - profile.annualBudgetUsd;
+    base = `At $${Math.round(practical.netCost)}/yr, the realistic cost is $${gap} above your $${profile.annualBudgetUsd} budget — and aid for international students is limited here. Your application energy works harder elsewhere.`;
   }
 
   if (practical.meritLottery) {
@@ -118,6 +119,7 @@ export function buildC7ProfileLines(
   c7: C7Factors,
   universityName: string,
   profileScore: number,
+  rubricTotal: number,
 ): string[] {
   const lines: string[] = [];
   const norm = rubricNorm(rubric);
@@ -128,11 +130,11 @@ export function buildC7ProfileLines(
   // Extracurriculars signal
   if (c7.extracurriculars === "very important" && rubricLow) {
     lines.push(
-      `${universityName} considers extracurriculars very important — building a clear spike (e.g. national competition, founded organisation, sustained research) before applying meaningfully strengthens your position.`,
+      `${universityName} considers extracurriculars very important — your current profile scores ${rubricTotal}/100, and building a clear spike (national competition, founded organisation, sustained research) before applying meaningfully strengthens your position.`,
     );
   } else if (c7.extracurriculars === "very important" && rubricMid) {
     lines.push(
-      `${universityName} weighs extracurriculars heavily — deepening your existing commitment or adding a leadership role can push your profile from typical to memorable.`,
+      `${universityName} weighs extracurriculars heavily — at ${rubricTotal}/100, deepening your existing commitment or adding a leadership role can push your profile from typical to memorable.`,
     );
   }
 
@@ -193,20 +195,22 @@ export function explainProfile(
       university.c7Factors,
       university.name,
       profileResult.score,
+      profileResult.rubricTotal,
     );
     return lines[0]!;
   }
 
-  // Generic path (unchanged)
+  // Generic path
+  const { rubricTotal } = profileResult;
   if (profileResult.score > EXPLANATION_BANDS.midUpTo) {
     const area = RUBRIC_AREA_LABELS[strongestRubricArea(rubric)];
     const selectivityWord = profileResult.tier <= 2 ? "selective" : "accessible";
-    return `Your ${area} stands out at a school this ${selectivityWord} — activities like yours are a real differentiator here.`;
+    return `Your ${area} and a profile score of ${rubricTotal}/100 stand out at a school this ${selectivityWord} — activities like yours are a real differentiator here.`;
   }
   if (profileResult.score >= EXPLANATION_BANDS.lowBelow) {
-    return "Your profile is typical of students admitted here — solid, with room to stand out more through your essays.";
+    return `Your profile (${rubricTotal}/100) is typical of students admitted here — solid, with room to stand out more through your essays.`;
   }
-  return "Students here usually show stronger leadership, awards, or longer-term commitment — you have time to build toward that, and your essays can carry more weight meanwhile.";
+  return `Students here typically look for 60+/100 across leadership, awards, and commitment — your current ${rubricTotal}/100 has real room to grow. Deepening one area before applying gives you the clearest lift.`;
 }
 
 /** §5 Overall, one per category. Reach also covers the unsorted/gated case. */

@@ -22,7 +22,7 @@ import {
   NEED_AWARE_PENALTY,
   TEST_HELPS_THRESHOLD,
 } from "./weights";
-import { bandScore, clamp, normalizeGpa } from "./normalize";
+import { bandScore, clamp, normalizeGpa, round1 } from "./normalize";
 
 /**
  * §1.5 — optional AP bonus. Applied after the base blend, before §1.4
@@ -150,9 +150,20 @@ export function calculateAcademicFit(
   if (checkEnglishGate(profile, university)) {
     capped = Math.min(capped, ACADEMIC_GATES.englishBelowMinCap);
     const ieltsMin = university.ieltsMin ?? ENGLISH_DEFAULTS.ielts;
+    const toeflMin = university.toeflMin ?? ENGLISH_DEFAULTS.toefl;
+    let engExplanation: string;
+    if (profile.englishTest === "none" || profile.englishScore == null) {
+      engExplanation = `${university.name} requires an English test (IELTS ${ieltsMin}+ or TOEFL ${toeflMin}+) — submitting one unlocks this school.`;
+    } else if (profile.englishTest === "ielts") {
+      const diff = round1(ieltsMin - profile.englishScore);
+      engExplanation = `Your IELTS ${profile.englishScore} is ${diff} below ${university.name}'s minimum of ${ieltsMin} — reaching ${ieltsMin}+ unlocks this school.`;
+    } else {
+      const diff = Math.round(toeflMin - profile.englishScore);
+      engExplanation = `Your TOEFL ${profile.englishScore} is ${diff} below ${university.name}'s minimum of ${toeflMin} — reaching ${toeflMin}+ unlocks this school.`;
+    }
     gates.push({
       gate: "english-below-minimum",
-      explanation: `Their minimum is IELTS ${ieltsMin} — retaking the test unlocks this school.`,
+      explanation: engExplanation,
     });
   }
 

@@ -71,9 +71,10 @@ export function calculatePracticalFit(profile: StudentProfile, university: Unive
   // Gate F — financial impossibility: no intl aid AND budget below cost.
   if (university.intlAidPolicy === "none" && profile.annualBudgetUsd < university.costOfAttendanceUsd) {
     score = Math.min(score, PRACTICAL_GATES.financialCap);
+    const gap = university.costOfAttendanceUsd - profile.annualBudgetUsd;
     gates.push({
       gate: "financial",
-      explanation: `${university.name} doesn't offer financial aid to international students, and its $${university.costOfAttendanceUsd}/yr cost is above your budget — unless outside funding appears, this one's blocked. The schools below give you a real path.`,
+      explanation: `${university.name} offers no financial aid to international students — at $${university.costOfAttendanceUsd}/yr, that's $${gap} above your $${profile.annualBudgetUsd} budget. Without outside funding, your application energy works harder elsewhere.`,
     });
   }
 
