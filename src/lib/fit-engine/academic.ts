@@ -152,11 +152,12 @@ export function calculateAcademicFit(
     const ieltsMin = university.ieltsMin ?? ENGLISH_DEFAULTS.ielts;
     const toeflMin = university.toeflMin ?? ENGLISH_DEFAULTS.toefl;
     let engExplanation: string;
+    const ieltsDisplay = Number.isInteger(ieltsMin) ? `${ieltsMin}.0` : `${ieltsMin}`;
     if (profile.englishTest === "none" || profile.englishScore == null) {
-      engExplanation = `${university.name} requires an English test (IELTS ${ieltsMin}+ or TOEFL ${toeflMin}+) — submitting one unlocks this school.`;
+      engExplanation = `${university.name} requires an English test (IELTS ${ieltsDisplay}+ or TOEFL ${toeflMin}+) — submitting one unlocks this school.`;
     } else if (profile.englishTest === "ielts") {
       const diff = round1(ieltsMin - profile.englishScore);
-      engExplanation = `Your IELTS ${profile.englishScore} is ${diff} below ${university.name}'s minimum of ${ieltsMin} — reaching ${ieltsMin}+ unlocks this school.`;
+      engExplanation = `Your IELTS ${profile.englishScore} is ${diff} below ${university.name}'s minimum of ${ieltsDisplay} — reaching ${ieltsDisplay}+ unlocks this school.`;
     } else {
       const diff = Math.round(toeflMin - profile.englishScore);
       engExplanation = `Your TOEFL ${profile.englishScore} is ${diff} below ${university.name}'s minimum of ${toeflMin} — reaching ${toeflMin}+ unlocks this school.`;
