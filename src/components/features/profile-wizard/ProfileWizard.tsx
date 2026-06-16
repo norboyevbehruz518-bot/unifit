@@ -77,7 +77,7 @@ export function ProfileWizard() {
     }
 
     clearWizardState();
-    router.push("/app/profile");
+    router.push("/app/universities");
   }
 
   if (!hydrated) {
