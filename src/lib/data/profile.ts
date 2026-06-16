@@ -21,6 +21,8 @@ export interface ProfileRow {
   rubric_focus: number;
   citizenship: string;
   ap_scores: ApScore[] | null;
+  full_name: string;
+  age: number | null;
   updated_at: string;
 }
 
@@ -50,13 +52,15 @@ export function mapProfileRow(row: ProfileRow): StudentProfile {
     },
     citizenship: row.citizenship,
     apScores: row.ap_scores ?? undefined,
+    fullName: row.full_name || undefined,
+    age: row.age ?? undefined,
   };
 }
 
 const PROFILE_COLUMNS =
   "id, gpa_value, gpa_scale, sat_total, act_composite, english_test, english_score, " +
   "intended_majors, annual_budget_usd, aid_need_level, rubric_leadership, rubric_awards, " +
-  "rubric_commitment, rubric_focus, citizenship, ap_scores, updated_at";
+  "rubric_commitment, rubric_focus, citizenship, ap_scores, full_name, age, updated_at";
 
 /** Loads the signed-in user's profile, or null if they haven't completed setup yet. */
 export async function getProfile(

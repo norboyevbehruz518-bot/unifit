@@ -30,6 +30,10 @@ export default async function ProfilePage() {
     redirect("/app/setup");
   }
 
+  if (!profile.full_name || profile.full_name.trim().length < 2) {
+    redirect("/app/setup");
+  }
+
   const gpaScale = profile.gpa_scale as GpaScale;
   const gpaValue = Number(profile.gpa_value);
   const gpaConversion =

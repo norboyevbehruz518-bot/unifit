@@ -6,6 +6,8 @@ import type { AidNeedLevel, ApScore, EnglishTest, GpaScale, ProfileRubric } from
  * parsed at validation/submit time.
  */
 export interface ProfileDraft {
+  fullName: string;
+  age: string;
   citizenship: string;
   gpaValue: string;
   gpaScale: GpaScale;
@@ -22,6 +24,8 @@ export interface ProfileDraft {
 }
 
 export const EMPTY_DRAFT: ProfileDraft = {
+  fullName: "",
+  age: "",
   citizenship: "",
   gpaValue: "",
   gpaScale: "4.0",

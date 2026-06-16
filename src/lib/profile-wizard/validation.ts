@@ -2,6 +2,23 @@ import type { ProfileDraft } from "./draft";
 
 export type StepErrors = Record<string, string>;
 
+export function validateStep0(draft: ProfileDraft): StepErrors {
+  const errors: StepErrors = {};
+
+  if (!draft.fullName.trim() || draft.fullName.trim().length < 2) {
+    errors.fullName = "Enter your full name (at least 2 characters).";
+  }
+
+  const age = Number(draft.age);
+  if (!draft.age || Number.isNaN(age)) {
+    errors.age = "Enter your age so we can personalise your experience.";
+  } else if (age < 13 || age > 25) {
+    errors.age = "UniFit is for students aged 13–25.";
+  }
+
+  return errors;
+}
+
 const GPA_MAX: Record<ProfileDraft["gpaScale"], number> = {
   "4.0": 4,
   "5.0-uz": 5,
@@ -70,6 +87,8 @@ export function validateStep4(): StepErrors {
 
 export function validateStep(step: number, draft: ProfileDraft): StepErrors {
   switch (step) {
+    case 0:
+      return validateStep0(draft);
     case 1:
       return validateStep1(draft);
     case 2:

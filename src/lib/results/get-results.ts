@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { calculateFitResult } from "@/lib/fit-engine";
 import { getOrCreateDefaultList, getListItems } from "@/lib/data/lists";
 import { getProfile } from "@/lib/data/profile";
@@ -44,6 +45,11 @@ export async function getOrComputeResults(
   ]);
   if (!profileWithMeta) return null;
   const { profile, updatedAt } = profileWithMeta;
+
+  // Existing users who predate the name/age fields get sent back to setup.
+  if (!profile.fullName || profile.fullName.trim().length < 2) {
+    redirect("/app/setup");
+  }
 
   const universityIds = await getListItems(supabase, listId);
   if (universityIds.length === 0) {

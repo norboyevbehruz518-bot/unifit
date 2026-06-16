@@ -48,8 +48,12 @@ export default async function ResultsPage() {
   );
   const hasLowConfidence = view.results.some((r) => r.result.dataConfidence === "low");
 
+  const fullName = view.profile.fullName?.trim() ?? "";
+  const firstName = fullName.split(" ")[0] ?? fullName;
+
   return (
     <div className="flex flex-col gap-6">
+      <h1 className="text-h1 font-semibold text-stone-900">{firstName}&apos;s fit results</h1>
       <ListBalanceHero balance={balance} />
 
       {view.needsRecalculate && <RecalculateButton />}

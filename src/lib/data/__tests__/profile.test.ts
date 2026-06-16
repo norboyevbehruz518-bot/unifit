@@ -19,6 +19,8 @@ function makeRow(overrides: Partial<ProfileRow> = {}): ProfileRow {
     rubric_focus: 2,
     citizenship: "UZ",
     ap_scores: null,
+    full_name: "Jasur Toshmatov",
+    age: 18,
     updated_at: "2026-06-01T00:00:00.000Z",
     ...overrides,
   };

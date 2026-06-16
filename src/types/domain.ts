@@ -80,6 +80,9 @@ export interface ApScore {
 // ---------------------------------------------------------------------------
 
 export interface StudentProfile {
+  /** Not used by the fit engine — display/personalisation only. */
+  fullName?: string;
+  age?: number;
   /** GPA exactly as the student entered it, in their own system. */
   gpaValue: number;
   gpaScale: GpaScale;
