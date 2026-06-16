@@ -7,7 +7,7 @@ export interface StoredWizardState {
   draft: ProfileDraft;
 }
 
-const EMPTY_STATE: StoredWizardState = { step: 1, draft: EMPTY_DRAFT };
+const EMPTY_STATE: StoredWizardState = { step: 0, draft: EMPTY_DRAFT };
 
 export function loadWizardState(): StoredWizardState {
   if (typeof window === "undefined") return EMPTY_STATE;
@@ -16,7 +16,7 @@ export function loadWizardState(): StoredWizardState {
     if (!raw) return EMPTY_STATE;
     const parsed = JSON.parse(raw) as Partial<StoredWizardState>;
     return {
-      step: parsed.step ?? 1,
+      step: parsed.step ?? 0,
       draft: { ...EMPTY_DRAFT, ...parsed.draft },
     };
   } catch {

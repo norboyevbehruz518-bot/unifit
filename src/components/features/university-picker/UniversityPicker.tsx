@@ -2,20 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/Input";
-import { SegmentedControl } from "@/components/ui/SegmentedControl";
-import { getSelectivityTier, TIER_SHORT_LABELS } from "@/lib/universities/tiers";
-import type { SelectivityTier, University } from "@/types/domain";
+import { getSelectivityTier } from "@/lib/universities/tiers";
+import type { University } from "@/types/domain";
 import { UniversityCard } from "./UniversityCard";
 
 export const MAX_SELECTED = 12;
-
-const TIER_FILTER_OPTIONS = [
-  { value: "all", label: "All" },
-  { value: "1", label: TIER_SHORT_LABELS[1] },
-  { value: "2", label: TIER_SHORT_LABELS[2] },
-  { value: "3", label: TIER_SHORT_LABELS[3] },
-  { value: "4", label: TIER_SHORT_LABELS[4] },
-];
 
 export interface UniversityPickerProps {
   universities: University[];
@@ -23,17 +14,14 @@ export interface UniversityPickerProps {
   onChange: (ids: string[]) => void;
 }
 
-/** True once the "mostly ultra-selective" list shape has emerged. */
 export function shouldShowUltraSelectiveTip(selected: University[]): boolean {
   if (selected.length < 2) return false;
   const tier1Count = selected.filter((u) => getSelectivityTier(u.acceptanceRateOverall) === 1).length;
   return tier1Count / selected.length >= 0.75;
 }
 
-/** Searchable, filterable list for picking up to {@link MAX_SELECTED} universities. */
 export function UniversityPicker({ universities, selectedIds, onChange }: UniversityPickerProps) {
   const [query, setQuery] = useState("");
-  const [tierFilter, setTierFilter] = useState("all");
 
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
   const atMax = selectedIds.length >= MAX_SELECTED;
@@ -46,10 +34,11 @@ export function UniversityPicker({ universities, selectedIds, onChange }: Univer
 
   const normalizedQuery = query.trim().toLowerCase();
   const visible = universities.filter((u) => {
-    if (normalizedQuery && !u.name.toLowerCase().includes(normalizedQuery) && !u.state.toLowerCase().includes(normalizedQuery)) {
-      return false;
-    }
-    if (tierFilter !== "all" && getSelectivityTier(u.acceptanceRateOverall) !== (Number(tierFilter) as SelectivityTier)) {
+    if (
+      normalizedQuery &&
+      !u.name.toLowerCase().includes(normalizedQuery) &&
+      !u.state.toLowerCase().includes(normalizedQuery)
+    ) {
       return false;
     }
     return true;
@@ -65,25 +54,12 @@ export function UniversityPicker({ universities, selectedIds, onChange }: Univer
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <Input
-          label="Search universities"
-          type="search"
-          placeholder="Search by name or state…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="sm:max-w-xs"
-        />
-        <p className="tnum text-small font-medium text-stone-700 sm:pb-2">
-          {selectedIds.length} / {MAX_SELECTED} selected
-        </p>
-      </div>
-
-      <SegmentedControl
-        label="Filter by selectivity"
-        options={TIER_FILTER_OPTIONS}
-        value={tierFilter}
-        onChange={setTierFilter}
+      <Input
+        label="Search universities"
+        type="search"
+        placeholder="Search by name or state…"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
       />
 
       {showTip && (

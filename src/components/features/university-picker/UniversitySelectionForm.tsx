@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { saveUniversitySelection } from "@/lib/universities/actions";
 import type { University } from "@/types/domain";
-import { UniversityPicker } from "./UniversityPicker";
+import { UniversityPicker, MAX_SELECTED } from "./UniversityPicker";
 
 export interface UniversitySelectionFormProps {
   universities: University[];
@@ -27,20 +27,27 @@ export function UniversitySelectionForm({ universities, initialSelectedIds }: Un
     });
   }
 
+  const count = selectedIds.length;
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="relative flex flex-col gap-4 pb-28">
       <UniversityPicker universities={universities} selectedIds={selectedIds} onChange={setSelectedIds} />
 
-      <div className="flex flex-col items-end gap-2 border-t border-stone-200 pt-4">
-        {error && <p className="text-small font-medium text-reach-700">{error}</p>}
-        <Button size="lg" onClick={handleSave} disabled={isPending}>
-          {isPending ? "Saving…" : "Save & see my fit"}
-        </Button>
-        {selectedIds.length === 0 && (
+      {/* Sticky save bar */}
+      <div className="sticky bottom-0 z-10 -mx-4 border-t border-stone-200 bg-white px-4 py-4 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] sm:-mx-6 sm:px-6">
+        <div className="flex items-center justify-between gap-4">
           <p className="text-small text-stone-500">
-            You can save an empty list and add universities later.
+            {count === 0
+              ? "No universities selected yet"
+              : `${count} / ${MAX_SELECTED} ${count === 1 ? "university" : "universities"} selected`}
           </p>
-        )}
+          <div className="flex flex-col items-end gap-1">
+            {error && <p className="text-caption font-medium text-reach-700">{error}</p>}
+            <Button size="lg" onClick={handleSave} disabled={isPending}>
+              {isPending ? "Saving…" : "Save & see my fit"}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
