@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/Card";
 import { ScoreBar } from "@/components/ui/ScoreBar";
 import type { FitResult, University } from "@/types/domain";
 import { DataConfidenceBadge } from "./DataConfidenceBadge";
+import { RankDisplay } from "./RankDisplay";
 
 const CATEGORY_LABELS = { reach: "Reach", target: "Target", safety: "Safety" } as const;
 
@@ -34,6 +35,8 @@ export function UniversityResultCard({ university, result }: UniversityResultCar
         <ScoreBar label="Practical fit" value={result.practicalFit} tone={tone} />
         <ScoreBar label="Profile fit" value={result.profileFit} tone={tone} />
       </div>
+
+      <RankDisplay universityId={university.id} academicFit={result.academicFit} />
 
       <div className="mt-4 flex items-center justify-between gap-3">
         <DataConfidenceBadge confidence={result.dataConfidence} />

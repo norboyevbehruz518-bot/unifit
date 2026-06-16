@@ -4,6 +4,7 @@ import { getProfile } from "@/lib/data/profile";
 import { getUniversitiesByIds } from "@/lib/data/universities";
 import { getLatestSnapshots, insertSnapshots, isSnapshotStale } from "@/lib/data/snapshots";
 import type { createClient as createServerClient } from "@/lib/supabase/server";
+import type { RankData } from "@/lib/ranking/getRank";
 import type { FitResult, StudentProfile, University } from "@/types/domain";
 
 type SupabaseClient = Awaited<ReturnType<typeof createServerClient>>;
@@ -11,6 +12,8 @@ type SupabaseClient = Awaited<ReturnType<typeof createServerClient>>;
 export interface ResultEntry {
   university: University;
   result: FitResult;
+  /** Always null from the server — fetched client-side by RankDisplay. */
+  rankData: RankData | null;
 }
 
 export interface ResultsView {
@@ -59,13 +62,13 @@ export async function getOrComputeResults(
   for (const university of universities) {
     const snapshot = snapshots.get(university.id);
     if (snapshot) {
-      results.push({ university, result: snapshot.result });
+      results.push({ university, result: snapshot.result, rankData: null });
       if (isSnapshotStale(snapshot, updatedAt)) needsRecalculate = true;
       continue;
     }
 
     const result = calculateFitResult(profile, university);
-    results.push({ university, result });
+    results.push({ university, result, rankData: null });
     toInsert.push({ universityId: university.id, profile, profileUpdatedAt: updatedAt, university, result });
   }
 

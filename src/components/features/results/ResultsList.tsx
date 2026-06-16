@@ -8,6 +8,7 @@ import { UniversityResultCard } from "./UniversityResultCard";
 export interface CategorizedResult {
   university: University;
   result: FitResult & { category: FitCategory };
+  rankData: null;
 }
 
 const SECTION_LABELS: Record<FitCategory, string> = {
