@@ -5,15 +5,22 @@ export type StepErrors = Record<string, string>;
 export function validateStep0(draft: ProfileDraft): StepErrors {
   const errors: StepErrors = {};
 
-  if (!draft.fullName.trim() || draft.fullName.trim().length < 2) {
-    errors.fullName = "Enter your full name (at least 2 characters).";
+  const name = draft.fullName.trim();
+  if (!name) {
+    errors.fullName = "Please enter your full name (first and last name).";
+  } else if (name.length > 60) {
+    errors.fullName = "Name must be 60 characters or fewer.";
+  } else if (!/^[a-zA-ZÀ-öø-ÿ\s\-']+$/.test(name)) {
+    errors.fullName = "Name should only contain letters, spaces, hyphens, and apostrophes.";
+  } else {
+    const words = name.split(/\s+/).filter(Boolean);
+    if (words.length < 2 || words.some((w) => w.length < 2)) {
+      errors.fullName = "Please enter your full name (first and last name).";
+    }
   }
 
-  const age = Number(draft.age);
-  if (!draft.age || Number.isNaN(age)) {
-    errors.age = "Enter your age so we can personalise your experience.";
-  } else if (age < 13 || age > 25) {
-    errors.age = "UniFit is for students aged 13–25.";
+  if (!draft.birthYear) {
+    errors.birthYear = "Please select your year of birth.";
   }
 
   return errors;

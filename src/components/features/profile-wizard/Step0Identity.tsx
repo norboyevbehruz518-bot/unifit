@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import type { ProfileDraft } from "@/lib/profile-wizard/draft";
 import type { StepErrors } from "@/lib/profile-wizard/validation";
 
@@ -7,6 +8,13 @@ export interface StepProps {
   errors: StepErrors;
   onChange: (patch: Partial<ProfileDraft>) => void;
 }
+
+const CURRENT_YEAR = new Date().getFullYear();
+
+const BIRTH_YEAR_OPTIONS = Array.from({ length: 2015 - 1950 + 1 }, (_, i) => {
+  const year = 2015 - i;
+  return { value: String(year), label: String(year) };
+});
 
 export function Step0Identity({ draft, errors, onChange }: StepProps) {
   return (
@@ -28,17 +36,14 @@ export function Step0Identity({ draft, errors, onChange }: StepProps) {
         error={errors.fullName}
       />
 
-      <Input
-        label="Your age"
-        type="number"
-        inputMode="numeric"
-        min={13}
-        max={25}
-        placeholder="e.g. 18"
-        value={draft.age}
-        onChange={(e) => onChange({ age: e.target.value })}
-        error={errors.age}
-        hint="UniFit is for students aged 13–25."
+      <Select
+        label="Year of birth"
+        placeholder="Select your birth year"
+        options={BIRTH_YEAR_OPTIONS}
+        value={draft.birthYear}
+        onChange={(e) => onChange({ birthYear: e.target.value })}
+        error={errors.birthYear}
+        hint="Used to personalise your experience"
       />
     </div>
   );

@@ -63,7 +63,7 @@ export function Step5Review({ draft, onEdit, onSubmit, submitting, submitError }
 
       <SummaryCard title="About you" step={0} onEdit={onEdit}>
         <SummaryRow label="Name" value={draft.fullName} />
-        <SummaryRow label="Age" value={draft.age} />
+        <SummaryRow label="Birth year" value={draft.birthYear} />
       </SummaryCard>
 
       <SummaryCard title="Academics" step={1} onEdit={onEdit}>

@@ -7,7 +7,7 @@ import type { AidNeedLevel, ApScore, EnglishTest, GpaScale, ProfileRubric } from
  */
 export interface ProfileDraft {
   fullName: string;
-  age: string;
+  birthYear: string;
   citizenship: string;
   gpaValue: string;
   gpaScale: GpaScale;
@@ -25,7 +25,7 @@ export interface ProfileDraft {
 
 export const EMPTY_DRAFT: ProfileDraft = {
   fullName: "",
-  age: "",
+  birthYear: "",
   citizenship: "",
   gpaValue: "",
   gpaScale: "4.0",
