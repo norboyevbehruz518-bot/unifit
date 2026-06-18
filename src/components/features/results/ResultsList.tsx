@@ -29,7 +29,13 @@ const ORDER_OPTIONS = [
   { value: "reach-first", label: "Reach → Safety" },
 ];
 
-export function ResultsList({ results }: { results: CategorizedResult[] }) {
+export function ResultsList({
+  results,
+  alumniUniversityIds,
+}: {
+  results: CategorizedResult[];
+  alumniUniversityIds: string[];
+}) {
   const [order, setOrder] = useState<Order>("safety-first");
 
   return (
@@ -52,7 +58,12 @@ export function ResultsList({ results }: { results: CategorizedResult[] }) {
             </h2>
             <div className="flex flex-col gap-3">
               {items.map(({ university, result }) => (
-                <UniversityResultCard key={university.id} university={university} result={result} />
+                <UniversityResultCard
+                  key={university.id}
+                  university={university}
+                  result={result}
+                  hasAlumni={alumniUniversityIds.includes(university.id)}
+                />
               ))}
             </div>
           </section>

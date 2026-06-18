@@ -11,9 +11,10 @@ const CATEGORY_LABELS = { reach: "Reach", target: "Target", safety: "Safety" } a
 export interface UniversityResultCardProps {
   university: University;
   result: FitResult;
+  hasAlumni?: boolean;
 }
 
-export function UniversityResultCard({ university, result }: UniversityResultCardProps) {
+export function UniversityResultCard({ university, result, hasAlumni }: UniversityResultCardProps) {
   const tone = result.category ?? "ink";
 
   return (
@@ -45,14 +46,24 @@ export function UniversityResultCard({ university, result }: UniversityResultCar
         </div>
       )}
 
-      <div className="mt-4 flex items-center justify-between gap-3">
+      <div className="mt-4 flex items-start justify-between gap-3">
         <DataConfidenceBadge confidence={result.dataConfidence} />
-        <Link
-          href={`/app/ranking/${university.id}`}
-          className="text-small font-medium text-ink-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-600"
-        >
-          See your ranking →
-        </Link>
+        <div className="flex flex-col items-end gap-1.5">
+          <Link
+            href={`/app/ranking/${university.id}`}
+            className="text-small font-medium text-ink-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-600"
+          >
+            See your ranking →
+          </Link>
+          {hasAlumni && (
+            <Link
+              href={`/app/alumni/${university.id}`}
+              className="text-small font-medium text-indigo-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              Meet alumni →
+            </Link>
+          )}
+        </div>
       </div>
     </Card>
   );

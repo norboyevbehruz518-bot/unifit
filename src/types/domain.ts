@@ -219,6 +219,25 @@ export interface FitResult {
 }
 
 // ---------------------------------------------------------------------------
+// Alumni (real admitted students from Uzbekistan)
+// ---------------------------------------------------------------------------
+
+export interface Alumni {
+  id: string;
+  universityId: string;
+  fullName: string;
+  country: string;
+  major: string;
+  yearAdmitted: number;
+  scholarship: string | null;
+  extracurriculars: string[];
+  honors: string[];
+  linkedinUrl: string | null;
+  bio: string | null;
+  isVerified: boolean;
+}
+
+// ---------------------------------------------------------------------------
 // List balance (FIT_ALGORITHM.md §4.5)
 // ---------------------------------------------------------------------------
 

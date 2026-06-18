@@ -5,6 +5,7 @@ import { ListBalanceHero } from "@/components/features/results/ListBalanceHero";
 import { RecalculateButton } from "@/components/features/results/RecalculateButton";
 import { ResultsList, type CategorizedResult } from "@/components/features/results/ResultsList";
 import { analyzeListBalance } from "@/lib/fit-engine";
+import { getAlumniUniversityIds } from "@/lib/data/alumni";
 import { getOrComputeResults } from "@/lib/results/get-results";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,7 +19,10 @@ export default async function ResultsPage() {
     redirect("/login");
   }
 
-  const view = await getOrComputeResults(supabase, userData.user.id);
+  const [view, alumniUniIds] = await Promise.all([
+    getOrComputeResults(supabase, userData.user.id),
+    getAlumniUniversityIds(supabase),
+  ]);
   if (!view) {
     redirect("/app/setup");
   }
@@ -65,7 +69,7 @@ export default async function ResultsPage() {
         </p>
       )}
 
-      {categorized.length > 0 && <ResultsList results={categorized} />}
+      {categorized.length > 0 && <ResultsList results={categorized} alumniUniversityIds={alumniUniIds} />}
 
       {gated.length > 0 && (
         <section className="flex flex-col gap-3">
